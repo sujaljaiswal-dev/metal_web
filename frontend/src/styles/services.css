@@ -1,0 +1,131 @@
+/* ══════════════════════════════
+   SERVICES
+══════════════════════════════ */
+.services-section {
+  border-bottom: var(--border);
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+}
+
+.svc {
+  padding: 2.2rem 2.5rem;
+  border-right: var(--border);
+  border-bottom: var(--border);
+  position: relative;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.2s ease;
+}
+
+/* Row 1 — slide from left */
+.svc:nth-child(1),
+.svc:nth-child(2),
+.svc:nth-child(3) {
+  transform: translateX(-70px);
+}
+
+/* Row 2 — slide from right */
+.svc:nth-child(4),
+.svc:nth-child(5),
+.svc:nth-child(6) {
+  transform: translateX(70px);
+}
+
+/* Visible state */
+.svc.row--visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Micro stagger — declared AFTER base .svc so they apply correctly */
+.svc:nth-child(1) {
+  transition-delay: 0ms;
+}
+
+.svc:nth-child(2) {
+  transition-delay: 60ms;
+}
+
+.svc:nth-child(3) {
+  transition-delay: 120ms;
+}
+
+.svc:nth-child(4) {
+  transition-delay: 0ms;
+}
+
+.svc:nth-child(5) {
+  transition-delay: 60ms;
+}
+
+.svc:nth-child(6) {
+  transition-delay: 120ms;
+}
+
+/* Border rules */
+.svc:nth-child(3),
+.svc:nth-child(6) {
+  border-right: none;
+}
+
+.svc:nth-child(4),
+.svc:nth-child(5),
+.svc:nth-child(6) {
+  border-bottom: none;
+}
+
+/* Hover */
+.svc:hover {
+  background: #fafaf6;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .svc {
+    opacity: 1;
+    transform: none;
+    transition: background 0.2s ease;
+  }
+}
+
+.svc-n {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  color: #bbb;
+  margin-bottom: 0.9rem;
+}
+
+.svc-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.65rem;
+}
+
+.svc-desc {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.75;
+}
+
+.svc-arrow {
+  display: block;
+  margin-top: 1.2rem;
+  font-size: 1.1rem;
+  color: #ccc;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.svc:hover .svc-arrow {
+  color: var(--dark);
+  transform: translateX(4px);
+}

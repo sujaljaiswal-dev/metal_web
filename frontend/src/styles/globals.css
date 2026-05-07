@@ -1,0 +1,180 @@
+/* ═══════════════════════════════════════════
+   METAL WEB — Global Styles
+   ═══════════════════════════════════════════ */
+
+:root {
+  --y: #efe13f;
+  --yd: #7a6e00;
+  --dark: #0d1b2a;
+  --border: 2.5px solid #0d1b2a;
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'Space Grotesk', sans-serif;
+  --scroll-progress: 0;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: #fff;
+  color: var(--dark);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ── REVEAL ANIMATION ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── TRENDY SCROLL EFFECTS ── */
+.scroll-progress {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 999;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--y) 0%, #ffef72 60%, #ffffff 100%);
+  box-shadow: 0 0 12px rgba(239, 225, 63, 0.65);
+}
+
+.parallax-soft,
+.parallax-strong {
+  --parallax-y: 0px;
+  transform: translate3d(0, var(--parallax-y), 0);
+  will-change: transform;
+}
+
+.parallax-soft {
+  transition: transform 0.35s ease-out;
+}
+
+.parallax-strong {
+  transition: transform 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress {
+    display: none;
+  }
+
+  .parallax-soft,
+  .parallax-strong {
+    transform: none !important;
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════
+   SCROLL EFFECTS
+══════════════════════════════ */
+
+/* EFFECT 3 — Sticky Section Headers */
+.section-header {
+  position: sticky;
+  top: 64px;
+  z-index: 10;
+  background: #fff;
+  border-bottom: 2.5px solid transparent;
+  transition: border-bottom-color 0.3s ease;
+}
+
+.section-header.is-stuck {
+  border-bottom-color: var(--dark);
+  box-shadow: 0 2px 8px rgba(13, 27, 42, 0.08);
+}
+
+/* EFFECT 2 — Stagger Grid Reveal */
+[data-stagger-item] {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity var(--stagger-duration, 500ms) cubic-bezier(0.22, 1, 0.36, 1),
+    transform var(--stagger-duration, 500ms) cubic-bezier(0.22, 1, 0.36, 1);
+  --stagger-duration: 500ms;
+}
+
+[data-stagger-item].stagger-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* EFFECT 5 — Work Grid Horizontal Slides */
+.work-card[data-slide-direction="left"] {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.work-card[data-slide-direction="up"] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1) 80ms,
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 80ms;
+}
+
+.work-card[data-slide-direction="right"] {
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1) 160ms,
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 160ms;
+}
+
+.work-card.slide-visible {
+  opacity: 1;
+  transform: translate(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-header {
+    position: static;
+    z-index: auto;
+  }
+
+  [data-stagger-item] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .work-card {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

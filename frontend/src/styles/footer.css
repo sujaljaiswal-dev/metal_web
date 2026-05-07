@@ -1,0 +1,76 @@
+/* ══════════════════════════════
+   FOOTER
+══════════════════════════════ */
+.foot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.fc {
+  padding: 2rem 2.5rem;
+  border-right: var(--border);
+  border-bottom: var(--border);
+}
+
+.fc:last-child {
+  border-right: none;
+
+}
+
+.fc-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #aaa;
+  margin-bottom: 0.5rem;
+}
+
+.fc-val {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fc-val a {
+  color: var(--y);
+  border-bottom: 1.5px solid var(--y);
+}
+
+.fc-val a:hover {
+  color: var(--yd);
+  border-color: var(--yd);
+}
+
+.socials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.socials a {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dark);
+  border: none;
+}
+
+.socials a:hover {
+  color: var(--yd);
+}
+
+.copyright {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 2.5rem;
+  border-top: var(--border);
+}
+
+.copyright span {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #aaa;
+}

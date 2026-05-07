@@ -1,0 +1,26 @@
+/* ═══════════════════════════════════════════
+   METAL WEB — Main Stylesheet Index
+   ═══════════════════════════════════════════ */
+
+/* Global & Base Styles */
+@import './globals.css';
+@import './buttons.css';
+
+/* Loader */
+@import './loader.css';
+
+/* Component Styles */
+@import './navbar.css';
+@import './sectionHeader.css';
+@import './footer.css';
+
+/* Section Styles */
+@import './hero.css';
+@import './ticker.css';
+@import './services.css';
+@import './work.css';
+@import './process.css';
+@import './cta.css';
+
+/* Responsive Styles */
+@import './responsive.css';

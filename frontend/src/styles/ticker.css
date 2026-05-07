@@ -1,0 +1,43 @@
+/* ══════════════════════════════
+   TICKER
+══════════════════════════════ */
+.ticker-wrap {
+  border-bottom: var(--border);
+  background: var(--y);
+  overflow: hidden;
+  padding: 0.8rem 0;
+}
+
+.ticker {
+  display: flex;
+  white-space: nowrap;
+  animation: ticker 26s linear infinite;
+}
+
+.ticker:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker span {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0 1.2rem;
+  color: var(--dark);
+}
+
+.ticker .star {
+  font-size: 0.85rem;
+}

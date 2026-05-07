@@ -1,0 +1,56 @@
+/* ══════════════════════════════
+   BUTTONS
+══════════════════════════════ */
+.btn {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.6rem;
+  border: var(--border);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.btn-solid {
+  background: var(--dark);
+  color: #fff;
+}
+
+.btn-solid:hover {
+  background: #1a2f45;
+}
+
+.btn-outline {
+  background: #fff;
+  color: var(--dark);
+}
+
+.btn-outline:hover {
+  background: var(--dark);
+  color: #fff;
+}
+
+.btn-yellow {
+  background: var(--y);
+  color: var(--dark);
+  border-color: var(--dark);
+}
+
+.btn-yellow:hover {
+  background: #d9cc38;
+}
+
+.btn-inv {
+  background: transparent;
+  color: #fff;
+  border-color: #fff;
+}
+
+.btn-inv:hover {
+  background: #fff;
+  color: var(--dark);
+}
