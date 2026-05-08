@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Metal Web favicon">
+  <rect x="1.5" y="1.5" width="61" height="61" rx="10" fill="#ffffff" stroke="#0d1b2a" stroke-width="3"/>
+  <rect x="1.5" y="1.5" width="61" height="18" rx="10" fill="#ffffff" stroke="#0d1b2a" stroke-width="3"/>
+  <line x1="1.5" y1="19.5" x2="62.5" y2="19.5" stroke="#0d1b2a" stroke-width="3"/>
+  <circle cx="12" cy="11" r="3" fill="#e05252"/>
+  <circle cx="23" cy="11" r="3" fill="#efe13f"/>
+  <circle cx="34" cy="11" r="3" fill="#52b452"/>
+  <text x="32" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#0d1b2a" letter-spacing="-1">MW</text>
+</svg>
