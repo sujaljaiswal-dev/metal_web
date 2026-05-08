@@ -10,8 +10,17 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
-.work-card {
+.work-card-link {
+  text-decoration: none;
+  color: inherit;
   border-right: var(--border);
+}
+
+.work-card-link:last-child {
+  border-right: none;
+}
+
+.work-card {
   cursor: pointer;
   overflow: hidden;
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
@@ -42,35 +51,29 @@
 
 .wimg-a {
   background-color: #e8e8e2;
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 12px,
-    rgba(0, 0, 0, 0.03) 12px,
-    rgba(0, 0, 0, 0.03) 13px
-  );
+  background-image: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 12px,
+      rgba(0, 0, 0, 0.03) 12px,
+      rgba(0, 0, 0, 0.03) 13px);
 }
 
 .wimg-b {
   background-color: var(--y);
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 12px,
-    rgba(0, 0, 0, 0.04) 12px,
-    rgba(0, 0, 0, 0.04) 13px
-  );
+  background-image: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 12px,
+      rgba(0, 0, 0, 0.04) 12px,
+      rgba(0, 0, 0, 0.04) 13px);
 }
 
 .wimg-c {
   background-color: var(--dark);
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 12px,
-    rgba(255, 255, 255, 0.04) 12px,
-    rgba(255, 255, 255, 0.04) 13px
-  );
+  background-image: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 12px,
+      rgba(255, 255, 255, 0.04) 12px,
+      rgba(255, 255, 255, 0.04) 13px);
 }
 
 .wi-label {

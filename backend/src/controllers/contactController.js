@@ -45,11 +45,10 @@ export const submitContact = async (req, res) => {
         // Log full error for debugging
         console.error('Error in submitContact controller:', error);
 
-        // Return error response including error message to aid debugging
-        const message = error?.message || 'Something went wrong. Please try again later.';
+        // Return a generic client-safe error message
         return res.status(500).json({
             success: false,
-            message,
+            message: 'Something went wrong. Please try again later.',
         });
     }
 };

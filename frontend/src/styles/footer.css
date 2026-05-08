@@ -72,5 +72,6 @@
   font-size: 0.8rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #aaa;
+  font-weight: 600;
+  color: var(--dark);
 }

@@ -4,7 +4,7 @@ export default function HomePage() {
     return (
         <>
             <HeroSection
-                tag="Est. 2024 — Web Agency · Mumbai"
+                tag="Est. 2025 — Web Agency · Mumbai"
                 title={<>We Build<br /><em>Digital</em><br />Machines.</>}
                 primaryLabel="View work →"
                 secondaryLabel="Start a project"

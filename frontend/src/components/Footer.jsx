@@ -13,7 +13,7 @@ export default function Footer() {
                 <div className="fc">
                     <div className="fc-label">Contact</div>
                     <div className="fc-val">
-                        <a href="mailto:hello@metalweb.agency">hello@metalweb.agency</a>
+                        <a href="mailto:contact@metalweb.site">contact@metalweb.site</a>
                     </div>
                 </div>
                 <div className="fc">

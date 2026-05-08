@@ -6,7 +6,6 @@ export const tickerItems = [
     'Brand Identity',
     'Next.js',
     'Webflow',
-    'Shopify',
 ];
 
 export const services = [
@@ -28,7 +27,7 @@ export const services = [
     {
         number: '04 /',
         title: 'E-Commerce',
-        description: 'Shopify & WooCommerce stores engineered to convert. Built around your revenue goals.',
+        description: 'WooCommerce stores engineered to convert. Built around your revenue goals.',
     },
     {
         number: '05 /',
@@ -49,13 +48,15 @@ export const work = [
         title: 'Buildstack SaaS',
         subtitle: 'Landing page · 2024',
         imageClass: 'wimg-a',
+        url: 'https://buildstack.io',
     },
     {
         label: 'E-Commerce',
         labelClass: 'dark',
         title: 'Aurum Fashion',
-        subtitle: 'Shopify store · 2024',
+        subtitle: 'E-Commerce store · 2024',
         imageClass: 'wimg-b',
+        url: 'https://aurumfashion.com',
     },
     {
         label: 'Branding',
@@ -63,6 +64,7 @@ export const work = [
         title: 'NovaTech Agency',
         subtitle: 'Identity + web · 2025',
         imageClass: 'wimg-c',
+        url: 'https://novatech-agency.com',
     },
 ];
 
@@ -90,8 +92,22 @@ export const processSteps = [
 ];
 
 export const heroStats = [
-    { value: '10+', label: 'Projects shipped', className: '' },
-    { value: '4.7★', label: 'Average client rating', className: 'yellow' },
+    {
+        value: '35+',
+        label: 'Projects shipped',
+        className: '',
+        countTarget: 35,
+        countSuffix: '+',
+        countDecimals: 0,
+    },
+    {
+        value: '4.7★',
+        label: 'Average client rating',
+        className: 'yellow',
+        countTarget: 4.7,
+        countSuffix: '★',
+        countDecimals: 1,
+    },
 ];
 
 export const testimonialStats = [

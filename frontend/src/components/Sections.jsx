@@ -9,8 +9,9 @@ import useTickerSpeed from '../hooks/useTickerSpeed';
 import useWorkSlide from '../hooks/useWorkSlide';
 
 export function HeroSection({ tag, title, accent, primaryLabel, secondaryLabel, primaryHref = '#contact', secondaryHref = '#work' }) {
-    const stat1Ref = useCountUp(10, '+', 0, 1800);
-    const stat2Ref = useCountUp(4.7, '★', 1, 1800);
+    const [firstHeroStat, secondHeroStat] = heroStats;
+    const stat1Ref = useCountUp(firstHeroStat.countTarget, firstHeroStat.countSuffix, firstHeroStat.countDecimals, 1800);
+    const stat2Ref = useCountUp(secondHeroStat.countTarget, secondHeroStat.countSuffix, secondHeroStat.countDecimals, 1800);
 
     const handleAnchorClick = (e) => {
         const href = e.currentTarget.getAttribute('href');
@@ -106,23 +107,30 @@ export function WorkSection({ showHeader = true }) {
 
     return (
         <section id="work" className="work-section">
-            {showHeader ? <SectionHeader title="Selected Work" linkText="View all projects →" /> : null}
+            {showHeader ? <SectionHeader title="Work" subtitle="Work" /> : null}
             <div className="work-grid" ref={gridRef}>
                 {work.map((project, index) => (
-                    <Reveal
+                    <a
                         key={project.title}
-                        className="work-card"
-                        data-slide-direction={getSlideDirection(index)}
-                        delay={index * 0.1}
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="work-card-link"
                     >
-                        <div className={`work-img ${project.imageClass} parallax-soft`}>
-                            <span className={`wi-label ${project.labelClass}`.trim()}>{project.label}</span>
-                        </div>
-                        <div className="work-info">
-                            <h3 className="work-title">{project.title}</h3>
-                            <p className="work-sub">{project.subtitle}</p>
-                        </div>
-                    </Reveal>
+                        <Reveal
+                            className="work-card"
+                            data-slide-direction={getSlideDirection(index)}
+                            delay={index * 0.1}
+                        >
+                            <div className={`work-img ${project.imageClass} parallax-soft`}>
+                                <span className={`wi-label ${project.labelClass}`.trim()}>{project.label}</span>
+                            </div>
+                            <div className="work-info">
+                                <h3 className="work-title">{project.title}</h3>
+                                <p className="work-sub">{project.subtitle}</p>
+                            </div>
+                        </Reveal>
+                    </a>
                 ))}
             </div>
         </section>
@@ -147,9 +155,9 @@ export function ProcessSection({ showHeader = true, includeTestimonial = true })
                 <div className="testimonial">
                     <Reveal className="t-left">
                         <p className="t-quote">
-                            "Metal Web turned our rough idea into a product that actually converts. Best web investment we've made."
+                            "They didn't just build what we asked for—they built what we actually needed to grow. A truly strategic partner in every sense."
                         </p>
-                        <span className="t-author">— Priya Mehta, Founder · Launchpad</span>
+                        <span className="t-author">— Kavita, Founder · EarthPlate</span>
                     </Reveal>
                     <Reveal className="t-right" delay={0.15}>
                         {testimonialStats.map((stat) => (
@@ -169,14 +177,67 @@ export function ContactSection() {
     const formRef = useRef(null);
     const [submitted, setSubmitted] = useState(false);
     const [sending, setSending] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [formStatus, setFormStatus] = useState('');
+
+    const clearFieldError = (fieldName) => {
+        setFieldErrors((current) => {
+            if (!current[fieldName]) return current;
+            const next = { ...current };
+            delete next[fieldName];
+            return next;
+        });
+    };
+
+    const handleFieldChange = (fieldName) => {
+        clearFieldError(fieldName);
+        if (formStatus) setFormStatus('');
+    };
+
+    const setValidationErrors = (errors) => {
+        const nextErrors = {};
+
+        errors.forEach((error) => {
+            const fieldName = error?.name;
+            if (!fieldName) return;
+            nextErrors[fieldName] = error?.message || 'Please check this field.';
+        });
+
+        setFieldErrors(nextErrors);
+        setFormStatus('Please fix the highlighted fields and try again.');
+    };
+
+    const focusFirstError = (errors) => {
+        const firstErrorField = errors[0]?.name;
+        if (!firstErrorField || !formRef.current) return;
+
+        const field = formRef.current.querySelector(`[name="${firstErrorField}"]`);
+        if (field && typeof field.focus === 'function') {
+            field.focus();
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formRef.current) return;
 
+        setFieldErrors({});
+        setFormStatus('');
+
         // Run native form validation first (this allows required, email, minlength etc.)
         if (formRef.current && !formRef.current.checkValidity()) {
-            formRef.current.reportValidity();
+            const invalidElements = Array.from(formRef.current.elements).filter(
+                (element) => element?.name && element.willValidate && !element.checkValidity()
+            );
+
+            const nextErrors = {};
+            invalidElements.forEach((element) => {
+                nextErrors[element.name] = element.validationMessage || 'Please check this field.';
+            });
+
+            setFieldErrors(nextErrors);
+            setFormStatus('Please fix the highlighted fields and try again.');
+            focusFirstError(invalidElements.map((element) => ({ name: element.name })));
             return;
         }
 
@@ -203,23 +264,41 @@ export function ContactSection() {
 
             if (res.ok && data.success) {
                 setSubmitted(true);
+                setFieldErrors({});
+                setFormStatus('');
                 if (formRef.current) formRef.current.reset();
                 setTimeout(() => {
                     setSubmitted(false);
                 }, 3500);
             } else {
-                // Show validation error details if available
                 console.error('Contact submission failed:', data);
-                const serverMessage = data?.message || 'Failed to send message.';
-                const details = Array.isArray(data?.errors)
-                    ? data.errors.map((err) => `${err.param}: ${err.msg}`).join('\n')
-                    : '';
 
-                alert(details ? `${serverMessage}\n\n${details}` : serverMessage);
+                if (Array.isArray(data?.errors) && data.errors.length > 0) {
+                    const mappedErrors = data.errors.map((error) => ({
+                        name: error?.param === 'serviceType' ? 'service'
+                            : error?.param === 'description' ? 'message'
+                                : error?.param,
+                        message: error?.msg,
+                    }));
+
+                    const nextErrors = {};
+                    mappedErrors.forEach((error) => {
+                        if (!error.name) return;
+                        nextErrors[error.name] = error.message || 'Please check this field.';
+                    });
+
+                    setFieldErrors(nextErrors);
+                    setFormStatus('Please fix the highlighted fields and try again.');
+                    focusFirstError(mappedErrors);
+                } else {
+                    setFieldErrors({});
+                    setFormStatus(data?.message || 'Failed to send message. Please try again later.');
+                }
             }
         } catch (err) {
             console.error('Network error submitting contact form:', err);
-            alert('Something went wrong. Please try again later.');
+            setFieldErrors({});
+            setFormStatus('Something went wrong. Please try again later.');
         } finally {
             setSending(false);
         }
@@ -238,35 +317,37 @@ export function ContactSection() {
                         Tell us about your project and we'll get back to you within 24 hours with a free consultation.
                     </p>
                     <div className="contact-info">
-                        <a href="mailto:hello@metalweb.agency" className="contact-link">
+                        <a href="mailto:contact@metalweb.site" className="contact-link">
                             <span className="contact-link-icon">✉</span>
-                            hello@metalweb.agency
+                            contact@metalweb.site
                         </a>
-                        <a href="tel:+919876543210" className="contact-link">
+                        <a href="tel:+91 8169574956" className="contact-link">
                             <span className="contact-link-icon">☎</span>
-                            +91 98765 43210
+                            +91 8169574956
                         </a>
                     </div>
                 </Reveal>
 
                 <Reveal className="contact-right" delay={0.15}>
                     <div className="contact-form-wrap">
-                        <form ref={formRef} className={`contact-form ${submitted ? 'form-hidden' : ''}`} onSubmit={handleSubmit} autoComplete="off">
+                        <form ref={formRef} className={`contact-form ${submitted ? 'form-hidden' : ''}`} onSubmit={handleSubmit} autoComplete="off" noValidate>
                             <div className="form-row">
                                 <div className="form-group">
                                     <label htmlFor="contact-name" className="form-label">Name</label>
-                                    <input id="contact-name" name="name" type="text" className="form-input" placeholder="John Doe" required />
+                                    <input id="contact-name" name="name" type="text" className={`form-input ${fieldErrors.name ? 'invalid' : ''}`} placeholder="John Doe" required aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'contact-name-error' : undefined} onChange={() => handleFieldChange('name')} />
+                                    {fieldErrors.name ? <span id="contact-name-error" className="form-error">{fieldErrors.name}</span> : null}
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="contact-email" className="form-label">Email</label>
-                                    <input id="contact-email" name="email" type="email" className="form-input" placeholder="john@company.com" required />
+                                    <input id="contact-email" name="email" type="email" className={`form-input ${fieldErrors.email ? 'invalid' : ''}`} placeholder="john@company.com" required aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'contact-email-error' : undefined} onChange={() => handleFieldChange('email')} />
+                                    {fieldErrors.email ? <span id="contact-email-error" className="form-error">{fieldErrors.email}</span> : null}
                                 </div>
                             </div>
 
                             <div className="form-row">
                                 <div className="form-group">
                                     <label htmlFor="contact-service" className="form-label">Service</label>
-                                    <select id="contact-service" name="service" className="form-input form-select" required defaultValue="">
+                                    <select id="contact-service" name="service" className={`form-input form-select ${fieldErrors.service ? 'invalid' : ''}`} required defaultValue="" aria-invalid={Boolean(fieldErrors.service)} aria-describedby={fieldErrors.service ? 'contact-service-error' : undefined} onChange={() => handleFieldChange('service')}>
                                         <option value="" disabled>Select a service</option>
                                         <option value="web-design">Web Design</option>
                                         <option value="web-dev">Web Development</option>
@@ -275,23 +356,28 @@ export function ContactSection() {
                                         <option value="ecommerce">E-Commerce</option>
                                         <option value="other">Other</option>
                                     </select>
+                                    {fieldErrors.service ? <span id="contact-service-error" className="form-error">{fieldErrors.service}</span> : null}
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="contact-budget" className="form-label">Budget</label>
-                                    <select id="contact-budget" name="budget" className="form-input form-select" defaultValue="">
+                                    <select id="contact-budget" name="budget" className={`form-input form-select ${fieldErrors.budget ? 'invalid' : ''}`} defaultValue="" required aria-invalid={Boolean(fieldErrors.budget)} aria-describedby={fieldErrors.budget ? 'contact-budget-error' : undefined} onChange={() => handleFieldChange('budget')}>
                                         <option value="" disabled>Select range</option>
                                         <option value="5k-10k">₹5K – ₹10K</option>
                                         <option value="10k-25k">₹10K – ₹25K</option>
                                         <option value="25k-50k">₹25K – ₹50K</option>
                                         <option value="50k+">₹50K+</option>
                                     </select>
+                                    {fieldErrors.budget ? <span id="contact-budget-error" className="form-error">{fieldErrors.budget}</span> : null}
                                 </div>
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="contact-message" className="form-label">Project Details</label>
-                                <textarea id="contact-message" name="message" className="form-input form-textarea" placeholder="Tell us about your project, goals, and timeline..." rows="5" required></textarea>
+                                <textarea id="contact-message" name="message" className={`form-input form-textarea ${fieldErrors.message ? 'invalid' : ''}`} placeholder="Tell us about your project, goals, and timeline..." rows="5" required minLength={10} aria-invalid={Boolean(fieldErrors.message)} aria-describedby={fieldErrors.message ? 'contact-message-error' : undefined} onChange={() => handleFieldChange('message')}></textarea>
+                                {fieldErrors.message ? <span id="contact-message-error" className="form-error">{fieldErrors.message}</span> : null}
                             </div>
+
+                            {formStatus ? <p className="contact-form-status" role="alert">{formStatus}</p> : null}
 
                             <button type="submit" className="btn btn-yellow contact-submit" disabled={sending}>
                                 {sending ? 'Sending…' : 'Send Message →'}
