@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ScrollEffects from './components/ScrollEffects';
 import Loader from './components/Loader';
+import SEO from './components/SEO';
 
 export default function App() {
     const [loaderFinished, setLoaderFinished] = useState(false);
@@ -34,6 +35,7 @@ export default function App() {
 
     return (
         <>
+            <SEO />
             <Loader
                 onFinished={() => {
                     setLoaderFinished(true);

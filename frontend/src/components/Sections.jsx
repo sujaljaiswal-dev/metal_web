@@ -1,7 +1,7 @@
 import React, { Fragment, useRef, useState } from 'react';
 import Reveal from './Reveal';
 import SectionHeader from './SectionHeader';
-// import Spider from './Spider'; // Temporarily disabled
+import Spider from './Spider';
 import { heroStats, processSteps, services, testimonialStats, tickerItems, work } from '../data/siteData';
 import useCountUp from '../hooks/useCountUp';
 import { useRowFlipIn } from '../hooks/useRowFlipIn';
@@ -28,7 +28,7 @@ export function HeroSection({ tag, title, accent, primaryLabel, secondaryLabel, 
 
     return (
         <section id="hero" className="hero-grid" style={{ position: 'relative' }}>
-            {/* <Spider /> */}
+            <Spider />
             <div className="hero-main">
                 <Reveal delay={0.1}><p className="hero-tag">{tag}</p></Reveal>
                 <Reveal delay={0.2}>
@@ -116,6 +116,7 @@ export function WorkSection({ showHeader = true }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="work-card-link"
+                        aria-label={`View project: ${project.title} - ${project.subtitle}`}
                     >
                         <Reveal
                             className="work-card"
@@ -317,11 +318,11 @@ export function ContactSection() {
                         Tell us about your project and we'll get back to you within 24 hours with a free consultation.
                     </p>
                     <div className="contact-info">
-                        <a href="mailto:contact@metalweb.site" className="contact-link">
+                        <a href="mailto:contact@metalweb.site" className="contact-link" aria-label="Email Metal Web Agency">
                             <span className="contact-link-icon">✉</span>
                             contact@metalweb.site
                         </a>
-                        <a href="tel:+91 8169574956" className="contact-link">
+                        <a href="tel:+91 8169574956" className="contact-link" aria-label="Call Metal Web Agency">
                             <span className="contact-link-icon">☎</span>
                             +91 8169574956
                         </a>

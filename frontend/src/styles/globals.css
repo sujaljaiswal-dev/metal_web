@@ -116,6 +116,16 @@ a {
    SCROLL EFFECTS
 ══════════════════════════════ */
 
+/* Global Section Stacking */
+section {
+  position: relative;
+  z-index: 1;
+}
+
+#hero {
+  z-index: 9999 !important; /* Force hero (and spider) to be on top of everything */
+}
+
 /* EFFECT 3 — Sticky Section Headers */
 .section-header {
   position: sticky;

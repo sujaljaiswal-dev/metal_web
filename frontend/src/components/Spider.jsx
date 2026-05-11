@@ -1,46 +1,36 @@
 import { useEffect, useRef } from 'react';
 
 const D2R = Math.PI / 180;
-const THIGH = 20, CALF = 22;       // Longer bones for proper reach
-const STEP_PERIOD = 200;           // ms between diagonal pair steps
-const STEP_DUR    = 140;           // ms each foot travels
+const THIGH = 22, CALF = 24;
+const STEP_DUR = 150;
+const STEP_HEIGHT = 12;
+const STRIDE_DIST = 20;
+const ROT_THRESHOLD = 10;
+const BOUNDARY_INSET = 45;
 
-// Body-local configs
-// lat: positive = spider's right side, fwd: positive = toward head
-// rfLat/rfFwd: resting foot position (body-local)
-// ks: knee bend direction for IK (+1 or -1)
 const LEGS = [
-  // Left side (ks=+1 bends knees outward-left)
-  { lat:-6, fwd: 7,   rfLat:-26, rfFwd: 22, ks: 1 },  // L1 front
-  { lat:-6, fwd: 2,   rfLat:-32, rfFwd:  4, ks: 1 },  // L2 mid-f
-  { lat:-6, fwd:-2,   rfLat:-30, rfFwd:-12, ks: 1 },  // L3 mid-b
-  { lat:-6, fwd:-7,   rfLat:-22, rfFwd:-26, ks: 1 },  // L4 rear
-  // Right side (ks=-1 bends knees outward-right)
-  { lat: 6, fwd: 7,   rfLat: 26, rfFwd: 22, ks:-1 },  // R1 front
-  { lat: 6, fwd: 2,   rfLat: 32, rfFwd:  4, ks:-1 },  // R2 mid-f
-  { lat: 6, fwd:-2,   rfLat: 30, rfFwd:-12, ks:-1 },  // R3 mid-b
-  { lat: 6, fwd:-7,   rfLat: 22, rfFwd:-26, ks:-1 },  // R4 rear
+  { id: 0, lat: -6, fwd: 10, rfLat: -28, rfFwd: 24, ks: 1, adj: [1, 4] },
+  { id: 1, lat: -6.5, fwd: 4, rfLat: -34, rfFwd: 6, ks: 1, adj: [0, 2, 5] },
+  { id: 2, lat: -6.5, fwd: -2, rfLat: -32, rfFwd: -14, ks: 1, adj: [1, 3, 6] },
+  { id: 3, lat: -6, fwd: -9, rfLat: -24, rfFwd: -28, ks: 1, adj: [2, 7] },
+  { id: 4, lat: 6, fwd: 10, rfLat: 28, rfFwd: 24, ks: -1, adj: [0, 5] },
+  { id: 5, lat: 6.5, fwd: 4, rfLat: 34, rfFwd: 6, ks: -1, adj: [4, 6, 1] },
+  { id: 6, lat: 6.5, fwd: -2, rfLat: 32, rfFwd: -14, ks: -1, adj: [5, 7, 2] },
+  { id: 7, lat: 6, fwd: -9, rfLat: 24, rfFwd: -28, ks: -1, adj: [6, 3] },
 ];
 
-// Diagonal gait pairs (alternating tripod-like)
-const GAIT = [[0,5],[2,7],[4,1],[6,3]];
-
-// Body-local → world coordinates
 function b2w(px, py, rot, lat, fwd) {
   const r = rot * D2R;
-  const cosR = Math.cos(r), sinR = Math.sin(r);
-  return {
-    x: px + cosR * lat - sinR * fwd,
-    y: py + sinR * lat + cosR * fwd,
-  };
+  const c = Math.cos(r), s = Math.sin(r);
+  return { x: px + c * fwd - s * lat, y: py + s * fwd + c * lat };
 }
 
-// 2-bone IK: find knee position given shoulder and foot
 function solveIK(sx, sy, fx, fy, T, C, ks) {
   const dx = fx - sx, dy = fy - sy;
   let d = Math.sqrt(dx * dx + dy * dy);
-  // Clamp to valid range
-  d = Math.max(Math.abs(T - C) + 0.5, Math.min(T + C - 0.5, d));
+  const minD = Math.abs(T - C) + 0.1;
+  const maxD = T + C - 0.1;
+  d = Math.max(minD, Math.min(maxD, d));
   const cosA = (T * T + d * d - C * C) / (2 * T * d);
   const a = Math.acos(Math.max(-1, Math.min(1, cosA)));
   const base = Math.atan2(dy, dx);
@@ -48,281 +38,252 @@ function solveIK(sx, sy, fx, fy, T, C, ks) {
   return { kx: sx + Math.cos(knee) * T, ky: sy + Math.sin(knee) * T };
 }
 
-const easeIO  = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-const easeOut = t => 1 - (1 - t) * (1 - t);
+const easeInOut = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+const easeOutCirc = t => Math.sqrt(1 - Math.pow(t - 1, 2));
 
 export default function Spider() {
   const spiderRef = useRef(null);
-  const svgRef    = useRef(null);
-  const webRef    = useRef(null);
-  const legRefs   = useRef([]);
+  const svgRef = useRef(null);
+  const webRef = useRef(null);
+  const legRefs = useRef([]);
   const curTarget = useRef(null);
 
   useEffect(() => {
     const spider = spiderRef.current;
-    const svgEl  = svgRef.current;
-    const web    = webRef.current;
-    const legEls = legRefs.current;
+    const web = webRef.current;
 
     let raf, timeout;
-    // rot: 0 = facing right, 90 = facing down, 180 = facing left, 270 = facing up
-    let pos = { x: -130, y: -530, rot: 270 };
+    let pos = { x: -200, y: -200, rot: 90, vRot: 90 };
+    let lastPos = { x: -200, y: -200 };
+    let lastTickRot = 90;
 
-    // Gait state
-    let footPos     = null;
-    let stepping    = Array(8).fill(false);
-    let stepFrom    = Array(8).fill(null);
-    let stepTo      = Array(8).fill(null);
-    let stepStartT  = Array(8).fill(0);
-    let gaitIdx     = 0;
-    let lastStepT   = 0;
-    let inCrawl     = false;
-
-    // ── Helpers ────────────────────────────────────────────
+    let footPos = LEGS.map(() => ({ x: 0, y: 0 }));
+    let stepFrom = LEGS.map(() => ({ x: 0, y: 0 }));
+    let stepTo = LEGS.map(() => ({ x: 0, y: 0 }));
+    let stepT = Array(8).fill(1);
+    let stepStartT = Array(8).fill(0);
+    let plantRot = Array(8).fill(90);
+    let inAction = false;
 
     const setPos = (x, y) => {
       pos.x = x; pos.y = y;
-      spider.style.transform = `translate(${x - 30}px,${y - 30}px)`;
+      if (spider) spider.style.transform = `translate(${x - 30}px,${y - 30}px)`;
     };
 
-    const setRot = r => {
-      pos.rot = r;
-      // SVG artwork has head at top (y=34), so rotate(0) = head-right
-      // We subtract 90 so that rot=0 in our system (facing right) maps to CSS rotate(-90deg)
-      // which turns the up-facing head to face right
-      svgEl.style.transform = `rotate(${r - 90}deg)`;
+    const updateVRot = () => {
+      let diff = pos.rot - pos.vRot;
+      while (diff > 180) diff -= 360;
+      while (diff < -180) diff += 360;
+      pos.vRot += diff * 0.18;
+      const svgBody = svgRef.current;
+      if (svgBody) svgBody.style.transform = `rotate(${pos.vRot + 90}deg)`;
     };
 
     const showWeb = (x1, y1, x2, y2) => {
+      if (!web) return;
       web.setAttribute('x1', x1); web.setAttribute('y1', y1);
       web.setAttribute('x2', x2); web.setAttribute('y2', y2);
       web.style.opacity = 1;
     };
-    const hideWeb = () => { web.style.opacity = 0; };
+    const hideWeb = () => { if (web) web.style.opacity = 0; };
 
-    const getIdeal    = (i, x, y, r) => b2w(x, y, r, LEGS[i].rfLat, LEGS[i].rfFwd);
-    const getShoulder = (i, x, y, r) => b2w(x, y, r, LEGS[i].lat,   LEGS[i].fwd);
-
-    const initFeet = (x, y, r) => {
-      footPos = LEGS.map((_, i) => getIdeal(i, x, y, r));
-      stepping.fill(false);
+    const getIdeal = (i, x, y, r, scale = 1) => {
+      let reachScale = scale;
+      if (scale > 1.1) {
+        reachScale = i === 0 || i === 4 ? 1.5 : // Even deeper reach for deep swings
+          i === 3 || i === 7 ? 1.5 :
+            1.2;
+      }
+      return b2w(x, y, r, LEGS[i].rfLat * reachScale, LEGS[i].rfFwd * reachScale);
     };
 
-    // Draw all 8 legs using IK
-    const drawLegs = (x, y, r) => {
-      const fp = footPos || LEGS.map((_, i) => getIdeal(i, x, y, r));
+    const getShoulder = (i, x, y, r) => b2w(x, y, r, LEGS[i].lat, LEGS[i].fwd);
+
+    const initFeet = (x, y, r, scale = 1) => {
+      footPos = LEGS.map((_, i) => getIdeal(i, x, y, r, scale));
+      stepT.fill(1); plantRot.fill(r);
+    };
+
+    const drawLegs = (x, y, r, jitterScale = 0.2) => {
       LEGS.forEach((leg, i) => {
         const s = getShoulder(i, x, y, r);
-        const f = fp[i];
+        const f = footPos[i];
         const { kx, ky } = solveIK(s.x, s.y, f.x, f.y, THIGH, CALF, leg.ks);
-        const el = legEls[i];
-        if (el) {
-          el.setAttribute('points',
-            `${s.x.toFixed(1)},${s.y.toFixed(1)} ${kx.toFixed(1)},${ky.toFixed(1)} ${f.x.toFixed(1)},${f.y.toFixed(1)}`
-          );
+        const el = legRefs.current[i];
+        if (el && isFinite(kx)) {
+          const j = (Math.random() - 0.5) * jitterScale;
+          el.setAttribute('points', `${(s.x + j).toFixed(1)},${(s.y + j).toFixed(1)} ${(kx + j).toFixed(1)},${(ky + j).toFixed(1)} ${(f.x + j).toFixed(1)},${(f.y + j).toFixed(1)}`);
         }
       });
     };
 
-    // Advance gait — step next diagonal pair
-    const tickGait = (now, x, y, r) => {
-      if (now - lastStepT < STEP_PERIOD) return;
-      lastStepT = now;
-      const group = GAIT[gaitIdx % GAIT.length];
-      group.forEach(i => {
-        stepFrom[i]   = { ...footPos[i] };
-        stepTo[i]     = getIdeal(i, x, y, r);
-        stepping[i]   = true;
-        stepStartT[i] = now;
+    const updateGait = (now, x, y, r, vx, vy, dr) => {
+      LEGS.forEach((leg, i) => {
+        const ideal = getIdeal(i, x, y, r);
+        if (stepT[i] < 1) {
+          const t = Math.min((now - stepStartT[i]) / STEP_DUR, 1);
+          const e = easeOutCirc(t);
+          let nx = stepFrom[i].x + (stepTo[i].x - stepFrom[i].x) * e;
+          let ny = stepFrom[i].y + (stepTo[i].y - stepFrom[i].y) * e;
+          const lift = Math.sin(t * Math.PI) * STEP_HEIGHT;
+          const side = i < 4 ? -1 : 1;
+          const rRad = r * D2R;
+          nx -= Math.sin(rRad) * lift * side; ny += Math.cos(rRad) * lift * side;
+          footPos[i] = { x: nx, y: ny };
+          stepT[i] = t;
+          if (t >= 1) plantRot[i] = r;
+        } else {
+          const dist = Math.sqrt(Math.pow(ideal.x - footPos[i].x, 2) + Math.pow(ideal.y - footPos[i].y, 2));
+          let rotDiff = r - plantRot[i];
+          while (rotDiff > 180) rotDiff -= 360;
+          while (rotDiff < -180) rotDiff += 360;
+          if (dist > STRIDE_DIST || Math.abs(rotDiff) > ROT_THRESHOLD) {
+            if (!leg.adj.some(nid => stepT[nid] < 1)) {
+              stepFrom[i] = { ...footPos[i] };
+              const proj = 2.0;
+              stepTo[i] = getIdeal(i, x + vx * proj, y + vy * proj, r + dr * proj);
+              stepT[i] = 0; stepStartT[i] = now;
+            }
+          }
+        }
       });
-      gaitIdx++;
     };
 
-    // Update positions of feet that are mid-step
-    const updateFeet = now => {
-      LEGS.forEach((_, i) => {
-        if (!stepping[i]) return;
-        const t = Math.min((now - stepStartT[i]) / STEP_DUR, 1);
-        const e = easeOut(t);
-        footPos[i] = {
-          x: stepFrom[i].x + (stepTo[i].x - stepFrom[i].x) * e,
-          y: stepFrom[i].y + (stepTo[i].y - stepFrom[i].y) * e,
-        };
-        if (t >= 1) stepping[i] = false;
-      });
-    };
-
-    // ── Idle draw loop ────────────────────────────────────
     let idleRaf;
     const startIdleDraw = () => {
       cancelAnimationFrame(idleRaf);
-      const loop = () => {
-        if (inCrawl) return;
-        drawLegs(pos.x, pos.y, pos.rot);
+      const loop = t => {
+        if (inAction) return;
+        const dr = pos.vRot - lastTickRot;
+        lastTickRot = pos.vRot;
+        updateVRot();
+        updateGait(t, pos.x, pos.y, pos.vRot, 0, 0, dr);
+        drawLegs(pos.x, pos.y, pos.vRot, 0.2);
         idleRaf = requestAnimationFrame(loop);
       };
       idleRaf = requestAnimationFrame(loop);
     };
 
-    // ── Movement helpers ──────────────────────────────────
-
     const calcRot = (dx, dy) => Math.atan2(dy, dx) * (180 / Math.PI);
-
-    const shortestRotTo = target => {
+    const shortestRot = target => {
       let diff = target - pos.rot;
       while (diff > 180) diff -= 360;
       while (diff < -180) diff += 360;
       return pos.rot + diff;
     };
 
-    const pickEdgePoint = (rect, gr) => {
-      const edges = ['top', 'right', 'bottom', 'left'];
-      const edge = edges[Math.floor(Math.random() * 4)];
-      let x = rect.left - gr.left, y = rect.top - gr.top;
-      if      (edge === 'top')    x += Math.random() * rect.width;
-      else if (edge === 'bottom') { x += Math.random() * rect.width; y += rect.height; }
-      else if (edge === 'left')   y += Math.random() * rect.height;
-      else                        { x += rect.width; y += Math.random() * rect.height; }
-      return { x, y };
+    const pickPoint = (rect, gr) => {
+      const minX = rect.left - gr.left + BOUNDARY_INSET;
+      const maxX = rect.right - gr.left - BOUNDARY_INSET;
+      const minY = rect.top - gr.top + BOUNDARY_INSET;
+      const maxY = rect.bottom - gr.top - BOUNDARY_INSET;
+      return { x: minX + Math.random() * (maxX - minX), y: minY + Math.random() * (maxY - minY) };
     };
 
-    // ── Phase: Drop ───────────────────────────────────────
-
     const performDrop = () => {
-      const grid   = document.querySelector('.hero-grid');
+      const grid = document.querySelector('.hero-grid');
       const blocks = document.querySelectorAll('.hero-main,.stat-cell');
       if (!grid || !blocks.length) return;
-      const gr  = grid.getBoundingClientRect();
+      const gr = grid.getBoundingClientRect();
       const tgt = blocks[Math.floor(Math.random() * blocks.length)];
       curTarget.current = tgt;
-      const rect = tgt.getBoundingClientRect();
-      const tx = rect.left - gr.left + Math.random() * rect.width;
-      const ty = rect.top - gr.top;
-
-      setPos(tx, -500);
-      setRot(90); // facing down
-      initFeet(tx, -500, 90);
-      startIdleDraw();
-
+      const { x: tx, y: ty } = pickPoint(tgt.getBoundingClientRect(), gr);
+      setPos(tx, -50); pos.rot = 90; pos.vRot = 90;
+      initFeet(tx, -50, 90); startIdleDraw();
       let t0;
       const drop = t => {
         if (!t0) t0 = t;
-        const p = Math.min((t - t0) / 1200, 1);
-        const y = -500 + (ty + 500) * easeIO(p);
-        footPos = LEGS.map((_, i) => getIdeal(i, tx, y, 90));
-        setPos(tx, y);
-        showWeb(tx, -500, tx, y);
-        if (p < 1) { raf = requestAnimationFrame(drop); }
-        else {
-          hideWeb();
-          initFeet(tx, ty, 90);
-          timeout = setTimeout(actionCycle, 2000 + Math.random() * 1500);
-        }
+        const p = Math.min((t - t0) / 1000, 1);
+        const y = -50 + (ty + 50) * easeInOut(p);
+        setPos(tx, y); initFeet(tx, y, 90, 1.3);
+        drawLegs(tx, y, 90, 0.5); showWeb(tx, -50, tx, y);
+        if (p < 1) raf = requestAnimationFrame(drop);
+        else { hideWeb(); timeout = setTimeout(actionCycle, 2000); }
       };
       raf = requestAnimationFrame(drop);
     };
-
-    // ── Phase: Swing ──────────────────────────────────────
 
     const doSwing = (gr, blocks) => {
       let tgt;
       do { tgt = blocks[Math.floor(Math.random() * blocks.length)]; }
       while (blocks.length > 1 && tgt === curTarget.current);
       curTarget.current = tgt;
-
-      const rect = tgt.getBoundingClientRect();
-      const { x: tx, y: ty } = pickEdgePoint(rect, gr);
-
+      const { x: tx, y: ty } = pickPoint(tgt.getBoundingClientRect(), gr);
       const sx = pos.x, sy = pos.y;
-      const pvtX = (sx + tx) / 2, pvtY = Math.min(sy, ty) - 400;
-      const dx = tx - sx, dy = ty - sy;
 
-      const tRot = shortestRotTo(calcRot(dx, dy));
-      setRot(tRot);
-      footPos = null; // legs go to ideal "splayed" pose
+      // Swing anchor can now be higher up to allow deeper swoop
+      const px = (sx + tx) / 2, py = Math.min(sy, ty) - 250;
+      pos.rot = shortestRot(calcRot(tx - sx, ty - sy));
 
       setTimeout(() => {
+        cancelAnimationFrame(idleRaf); inAction = true;
         let wt0;
-        const shootWeb = t => {
+        const swingDepth = 150 + Math.random() * 200; // swoops down 150-350px
+        const shoot = t => {
           if (!wt0) wt0 = t;
           const p = Math.min((t - wt0) / 200, 1);
-          showWeb(sx + (pvtX - sx) * p, sy + (pvtY - sy) * p, sx, sy);
-          if (p < 1) { raf = requestAnimationFrame(shootWeb); return; }
-
-          const low = (sy + ty) / 2;
-          const arc = Math.max(0, Math.min(150, gr.height - 30 - low));
+          showWeb(sx + (px - sx) * p, sy + (py - sy) * p, sx, sy);
+          if (p < 1) { raf = requestAnimationFrame(shoot); return; }
           let st0;
-          const swingArc = t2 => {
+          const swing = t2 => {
             if (!st0) st0 = t2;
-            const p2 = Math.min((t2 - st0) / 1000, 1);
-            const e = easeIO(p2);
+            const p2 = Math.min((t2 - st0) / 900, 1); // slightly slower swing for scale
+            const e = easeInOut(p2);
             const cx = sx + (tx - sx) * e;
-            const cy = sy + (ty - sy) * e + Math.sin(p2 * Math.PI) * arc;
-            setPos(cx, cy);
-            showWeb(pvtX, pvtY, cx, cy);
-            if (p2 < 1) { raf = requestAnimationFrame(swingArc); }
-            else {
-              hideWeb();
-              initFeet(cx, cy, pos.rot);
-              timeout = setTimeout(actionCycle, 2000 + Math.random() * 2000);
-            }
+            const cy = sy + (ty - sy) * e + Math.sin(p2 * Math.PI) * swingDepth;
+            const cvx = cx - pos.x, cvy = cy - pos.y;
+            if (Math.abs(cvx) + Math.abs(cvy) > 0.1) pos.rot = shortestRot(calcRot(cvx, cvy));
+            setPos(cx, cy); updateVRot();
+            initFeet(cx, cy, pos.vRot, 1.4); // Deeper flare
+            drawLegs(cx, cy, pos.vRot, 1.2); // Intense flailing
+            showWeb(px, py, cx, cy);
+            if (p2 < 1) raf = requestAnimationFrame(swing);
+            else { inAction = false; hideWeb(); startIdleDraw(); timeout = setTimeout(actionCycle, 2000); }
           };
-          raf = requestAnimationFrame(swingArc);
+          raf = requestAnimationFrame(swing);
         };
-        raf = requestAnimationFrame(shootWeb);
-      }, 350);
-    };
-
-    // ── Phase: Crawl ──────────────────────────────────────
-
-    const doCrawl = (gr, blocks) => {
-      const rect = curTarget.current.getBoundingClientRect();
-      const { x: tx, y: ty } = pickEdgePoint(rect, gr);
-
-      const sx = pos.x, sy = pos.y;
-      const dx = tx - sx, dy = ty - sy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 30) { doSwing(gr, blocks); return; }
-
-      const tRot = shortestRotTo(calcRot(dx, dy));
-      setRot(tRot);
-
-      setTimeout(() => {
-        cancelAnimationFrame(idleRaf);
-        inCrawl = true;
-        if (!footPos) initFeet(sx, sy, pos.rot);
-        gaitIdx = 0; lastStepT = 0;
-        const dur = Math.max(900, dist * 9);
-        let ct0;
-
-        const crawlLoop = t => {
-          if (!ct0) { ct0 = t; lastStepT = t; }
-          const p = Math.min((t - ct0) / dur, 1);
-          const cx = sx + dx * p, cy = sy + dy * p;
-          setPos(cx, cy);
-          tickGait(t, cx, cy, pos.rot);
-          updateFeet(t);
-          drawLegs(cx, cy, pos.rot);
-          if (p < 1) { raf = requestAnimationFrame(crawlLoop); }
-          else {
-            inCrawl = false;
-            startIdleDraw();
-            timeout = setTimeout(() => doSwing(gr, blocks), 600 + Math.random() * 800);
-          }
-        };
-        raf = requestAnimationFrame(crawlLoop);
+        raf = requestAnimationFrame(shoot);
       }, 300);
     };
 
-    // ── Decision loop ─────────────────────────────────────
+    const doCrawl = (gr, blocks) => {
+      const { x: tx, y: ty } = pickPoint(curTarget.current.getBoundingClientRect(), gr);
+      const dx = tx - pos.x, dy = ty - pos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 50) { doSwing(gr, blocks); return; }
+      pos.rot = shortestRot(calcRot(dx, dy));
+      setTimeout(() => {
+        cancelAnimationFrame(idleRaf); inAction = true;
+        initFeet(pos.x, pos.y, pos.rot);
+        let ct0;
+        const dur = Math.max(800, dist * 8);
+        const startX = pos.x, startY = pos.y;
+        lastPos = { x: startX, y: startY };
+        let iterLastRot = pos.vRot;
+        const loop = t => {
+          if (!ct0) ct0 = t;
+          const p = Math.min((t - ct0) / dur, 1);
+          const cx = startX + dx * p, cy = startY + dy * p;
+          const vx = cx - lastPos.x, vy = cy - lastPos.y;
+          const dr = pos.vRot - iterLastRot;
+          lastPos = { x: cx, y: cy }; iterLastRot = pos.vRot;
+          if (Math.abs(vx) + Math.abs(vy) > 0.1) pos.rot = shortestRot(calcRot(vx, vy));
+          setPos(cx, cy); updateVRot();
+          updateGait(t, cx, cy, pos.vRot, vx, vy, dr);
+          drawLegs(cx, cy, pos.vRot, 0.2);
+          if (p < 1) raf = requestAnimationFrame(loop);
+          else { inAction = false; startIdleDraw(); timeout = setTimeout(actionCycle, 1000); }
+        };
+        raf = requestAnimationFrame(loop);
+      }, 300);
+    };
 
     const actionCycle = () => {
-      const grid   = document.querySelector('.hero-grid');
+      const grid = document.querySelector('.hero-grid');
       const blocks = document.querySelectorAll('.hero-main,.stat-cell');
       if (!grid || !blocks.length) return;
-      const gr = grid.getBoundingClientRect();
-      if (curTarget.current && Math.random() > 0.3) doCrawl(grid, gr, blocks);
-      else doSwing(gr, blocks);
+      if (curTarget.current && Math.random() > 0.45) doCrawl(grid.getBoundingClientRect(), blocks);
+      else doSwing(grid.getBoundingClientRect(), blocks);
     };
 
     const onLoaded = () => { timeout = setTimeout(performDrop, 500); };
@@ -339,36 +300,20 @@ export default function Spider() {
 
   return (
     <>
-      {/* World-space overlay: web line + 8 IK legs */}
-      <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 49, overflow: 'visible' }}>
-        <line ref={webRef} x1="0" y1="0" x2="0" y2="0"
-          stroke="rgba(0,0,0,0.8)" strokeWidth="2.5"
-          style={{ opacity: 0, transition: 'opacity 0.15s' }} />
+      <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 999, overflow: 'visible' }}>
+        <line ref={webRef} x1="0" y1="0" x2="0" y2="0" stroke="rgba(13, 27, 42, 0.3)" strokeWidth="1.2" style={{ opacity: 0 }} />
         {Array.from({ length: 8 }, (_, i) => (
-          <polyline key={i} ref={el => legRefs.current[i] = el}
-            points="" fill="none"
-            stroke="#0d1b2a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <polyline key={i} ref={el => legRefs.current[i] = el} points="" fill="none" stroke="#0d1b2a" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
         ))}
       </svg>
-
-      {/* Spider body */}
-      <div ref={spiderRef} className="cyber-spider" style={{ transform: 'translate(-160px,-560px)' }}>
-        <svg ref={svgRef} width="60" height="60" viewBox="0 0 100 100" fill="none"
-          style={{ transform: 'rotate(180deg)', transition: 'transform 0.3s cubic-bezier(0.25,1,0.5,1)' }}>
-          {/* Glow */}
-          <circle cx="50" cy="50" r="24" fill="var(--y)" opacity="0.2" filter="blur(8px)" />
-          {/* Thorax */}
-          <ellipse cx="50" cy="40" rx="9" ry="13" fill="#0d1b2a" />
-          {/* Abdomen */}
+      <div ref={spiderRef} className="cyber-spider" style={{ position: 'absolute', width: 60, height: 60, transform: 'translate(-100px,-100px)', overflow: 'visible', zIndex: 999 }}>
+        <svg ref={svgRef} width="60" height="60" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="24" fill="var(--y)" opacity="0.15" filter="blur(8px)" />
+          <ellipse cx="50" cy="40" rx="11" ry="14" fill="#0d1b2a" />
           <circle cx="50" cy="66" r="15" fill="#0d1b2a" />
-          {/* Abdomen pattern */}
           <ellipse cx="50" cy="66" rx="7" ry="9" fill="#111f2e" opacity="0.6" />
-          {/* Eyes */}
           <circle cx="46" cy="34" r="3" fill="var(--y)" filter="drop-shadow(0 0 4px var(--y))" />
           <circle cx="54" cy="34" r="3" fill="var(--y)" filter="drop-shadow(0 0 4px var(--y))" />
-          {/* Fang hints */}
-          <ellipse cx="47" cy="29" rx="1.5" ry="2" fill="#0d1b2a" />
-          <ellipse cx="53" cy="29" rx="1.5" ry="2" fill="#0d1b2a" />
         </svg>
       </div>
     </>

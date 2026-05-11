@@ -6,7 +6,9 @@
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
   border-bottom: var(--border);
-  overflow: hidden;
+  position: relative; /* Ensure the spider stays relative to the grid */
+  z-index: 1000; /* Force hero layer to be on the absolute top */
+  overflow: visible; 
 }
 
 .hero-main {
@@ -109,7 +111,7 @@
   position: absolute;
   top: 0px;
   left: 0px;
-  z-index: 50;
+  z-index: 999;
   pointer-events: none;
   /* Position and Translation handled perfectly by JS requestAnimationFrame engine */
 }
