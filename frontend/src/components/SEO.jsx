@@ -30,7 +30,6 @@ const SEO = ({
       "@type": "GeoCoordinates",
       "latitude": 19.2828,
       "longitude": 72.8872
-
     },
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
@@ -38,7 +37,7 @@ const SEO = ({
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
       ],
       "opens": "09:00",
-      "closes": "18:00"
+      "closes": "20:00"
     },
     "sameAs": [
       "https://www.linkedin.com/company/metalweb",
