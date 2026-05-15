@@ -3,7 +3,6 @@ export const tickerItems = [
     'Development',
     'Motion Design',
     'E-Commerce',
-    'Brand Identity',
     'Next.js',
     'Webflow',
 ];
@@ -11,33 +10,23 @@ export const tickerItems = [
 export const services = [
     {
         number: '01 /',
-        title: 'Brand Identity',
-        description: 'Logos, systems, and visual language built to last. We craft identities that mean something.',
-    },
-    {
-        number: '02 /',
         title: 'Web Design',
         description: 'Pixel-perfect sites that perform on every device. Figma to browser without compromise.',
     },
     {
-        number: '03 /',
+        number: '02 /',
         title: 'Development',
         description: 'Clean code. Fast load. Zero compromise. React, Next.js, Webflow — we pick the right tool.',
     },
     {
-        number: '04 /',
+        number: '03 /',
         title: 'E-Commerce',
         description: 'WooCommerce stores engineered to convert. Built around your revenue goals.',
     },
     {
-        number: '05 /',
+        number: '04 /',
         title: 'Motion Design',
         description: 'Animations and interactions that bring your brand to life without slowing things down.',
-    },
-    {
-        number: '06 /',
-        title: 'Optimization',
-        description: 'CRO, SEO, performance audits. We turn traffic into paying customers, consistently.',
     },
 ];
 

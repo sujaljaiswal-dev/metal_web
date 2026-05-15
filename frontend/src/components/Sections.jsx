@@ -352,8 +352,6 @@ export function ContactSection() {
                                         <option value="" disabled>Select a service</option>
                                         <option value="web-design">Web Design</option>
                                         <option value="web-dev">Web Development</option>
-                                        <option value="branding">Branding &amp; Identity</option>
-                                        <option value="seo">SEO &amp; Marketing</option>
                                         <option value="ecommerce">E-Commerce</option>
                                         <option value="other">Other</option>
                                     </select>
@@ -363,7 +361,6 @@ export function ContactSection() {
                                     <label htmlFor="contact-budget" className="form-label">Budget</label>
                                     <select id="contact-budget" name="budget" className={`form-input form-select ${fieldErrors.budget ? 'invalid' : ''}`} defaultValue="" required aria-invalid={Boolean(fieldErrors.budget)} aria-describedby={fieldErrors.budget ? 'contact-budget-error' : undefined} onChange={() => handleFieldChange('budget')}>
                                         <option value="" disabled>Select range</option>
-                                        <option value="5k-10k">₹5K – ₹10K</option>
                                         <option value="10k-25k">₹10K – ₹25K</option>
                                         <option value="25k-50k">₹25K – ₹50K</option>
                                         <option value="50k+">₹50K+</option>

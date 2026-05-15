@@ -48,9 +48,16 @@ export default function Spider() {
   const legRefs = useRef([]);
   const curTarget = useRef(null);
 
+  // Animation State & Clock
+  const isVisible = useRef(true);
+  const isTabActive = useRef(true);
+  const activeTime = useRef(0);
+  const lastRawT = useRef(0);
+
   useEffect(() => {
     const spider = spiderRef.current;
     const web = webRef.current;
+    const grid = document.querySelector('.hero-grid');
 
     let raf, timeout;
     let pos = { x: -200, y: -200, rot: 90, vRot: 90 };
@@ -64,6 +71,39 @@ export default function Spider() {
     let stepStartT = Array(8).fill(0);
     let plantRot = Array(8).fill(90);
     let inAction = false;
+
+    // Intersection Observer to pause when off-screen
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible.current = entry.isIntersecting;
+      },
+      { threshold: 0.01 }
+    );
+    if (grid) observer.observe(grid);
+
+    // Tab visibility handling
+    const handleVisibilityChange = () => {
+      isTabActive.current = !document.hidden;
+      if (isTabActive.current) {
+        lastRawT.current = 0; // Reset delta on resume to avoid jump
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const updateClock = (rawT) => {
+      if (lastRawT.current === 0) {
+        lastRawT.current = rawT;
+        return activeTime.current;
+      }
+      const dt = rawT - lastRawT.current;
+      lastRawT.current = rawT;
+
+      // Only advance internal clock if tab is active (browser throttles RAF anyway)
+      if (isTabActive.current) {
+        activeTime.current += dt;
+      }
+      return activeTime.current;
+    };
 
     const setPos = (x, y) => {
       pos.x = x; pos.y = y;
@@ -90,7 +130,7 @@ export default function Spider() {
     const getIdeal = (i, x, y, r, scale = 1) => {
       let reachScale = scale;
       if (scale > 1.1) {
-        reachScale = i === 0 || i === 4 ? 1.5 : // Even deeper reach for deep swings
+        reachScale = i === 0 || i === 4 ? 1.5 :
           i === 3 || i === 7 ? 1.5 :
             1.2;
       }
@@ -105,6 +145,7 @@ export default function Spider() {
     };
 
     const drawLegs = (x, y, r, jitterScale = 0.2) => {
+      if (!isVisible.current || !isTabActive.current) return;
       LEGS.forEach((leg, i) => {
         const s = getShoulder(i, x, y, r);
         const f = footPos[i];
@@ -138,7 +179,9 @@ export default function Spider() {
           while (rotDiff > 180) rotDiff -= 360;
           while (rotDiff < -180) rotDiff += 360;
           if (dist > STRIDE_DIST || Math.abs(rotDiff) > ROT_THRESHOLD) {
-            if (!leg.adj.some(nid => stepT[nid] < 1)) {
+            // Safety: if leg is EXTREMELY far, ignore adjacency to prevent getting stuck
+            const isExtremelyFar = dist > STRIDE_DIST * 1.5;
+            if (isExtremelyFar || !leg.adj.some(nid => stepT[nid] < 1)) {
               stepFrom[i] = { ...footPos[i] };
               const proj = 2.0;
               stepTo[i] = getIdeal(i, x + vx * proj, y + vy * proj, r + dr * proj);
@@ -152,13 +195,16 @@ export default function Spider() {
     let idleRaf;
     const startIdleDraw = () => {
       cancelAnimationFrame(idleRaf);
-      const loop = t => {
+      const loop = rawT => {
+        const now = updateClock(rawT);
         if (inAction) return;
-        const dr = pos.vRot - lastTickRot;
-        lastTickRot = pos.vRot;
-        updateVRot();
-        updateGait(t, pos.x, pos.y, pos.vRot, 0, 0, dr);
-        drawLegs(pos.x, pos.y, pos.vRot, 0.2);
+        if (isVisible.current && isTabActive.current) {
+          const dr = pos.vRot - lastTickRot;
+          lastTickRot = pos.vRot;
+          updateVRot();
+          updateGait(now, pos.x, pos.y, pos.vRot, 0, 0, dr);
+          drawLegs(pos.x, pos.y, pos.vRot, 0.2);
+        }
         idleRaf = requestAnimationFrame(loop);
       };
       idleRaf = requestAnimationFrame(loop);
@@ -181,19 +227,20 @@ export default function Spider() {
     };
 
     const performDrop = () => {
-      const grid = document.querySelector('.hero-grid');
+      const gridRect = grid.getBoundingClientRect();
       const blocks = document.querySelectorAll('.hero-main,.stat-cell');
-      if (!grid || !blocks.length) return;
-      const gr = grid.getBoundingClientRect();
+      if (!blocks.length) return;
       const tgt = blocks[Math.floor(Math.random() * blocks.length)];
       curTarget.current = tgt;
-      const { x: tx, y: ty } = pickPoint(tgt.getBoundingClientRect(), gr);
+      const { x: tx, y: ty } = pickPoint(tgt.getBoundingClientRect(), gridRect);
       setPos(tx, -50); pos.rot = 90; pos.vRot = 90;
       initFeet(tx, -50, 90); startIdleDraw();
-      let t0;
-      const drop = t => {
-        if (!t0) t0 = t;
-        const p = Math.min((t - t0) / 1000, 1);
+      let t0 = -1;
+      const drop = rawT => {
+        const now = updateClock(rawT);
+        if (!isVisible.current || !isTabActive.current) { raf = requestAnimationFrame(drop); return; }
+        if (t0 < 0) t0 = now;
+        const p = Math.min((now - t0) / 1000, 1);
         const y = -50 + (ty + 50) * easeInOut(p);
         setPos(tx, y); initFeet(tx, y, 90, 1.3);
         drawLegs(tx, y, 90, 0.5); showWeb(tx, -50, tx, y);
@@ -210,32 +257,34 @@ export default function Spider() {
       curTarget.current = tgt;
       const { x: tx, y: ty } = pickPoint(tgt.getBoundingClientRect(), gr);
       const sx = pos.x, sy = pos.y;
-
-      // Swing anchor can now be higher up to allow deeper swoop
       const px = (sx + tx) / 2, py = Math.min(sy, ty) - 250;
       pos.rot = shortestRot(calcRot(tx - sx, ty - sy));
 
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         cancelAnimationFrame(idleRaf); inAction = true;
-        let wt0;
-        const swingDepth = 150 + Math.random() * 200; // swoops down 150-350px
-        const shoot = t => {
-          if (!wt0) wt0 = t;
-          const p = Math.min((t - wt0) / 200, 1);
+        let wt0 = -1;
+        const swingDepth = 150 + Math.random() * 200;
+        const shoot = rawT => {
+          const now = updateClock(rawT);
+          if (!isVisible.current || !isTabActive.current) { raf = requestAnimationFrame(shoot); return; }
+          if (wt0 < 0) wt0 = now;
+          const p = Math.min((now - wt0) / 200, 1);
           showWeb(sx + (px - sx) * p, sy + (py - sy) * p, sx, sy);
           if (p < 1) { raf = requestAnimationFrame(shoot); return; }
-          let st0;
-          const swing = t2 => {
-            if (!st0) st0 = t2;
-            const p2 = Math.min((t2 - st0) / 900, 1); // slightly slower swing for scale
+          let st0 = -1;
+          const swing = rawT2 => {
+            const now2 = updateClock(rawT2);
+            if (!isVisible.current || !isTabActive.current) { raf = requestAnimationFrame(swing); return; }
+            if (st0 < 0) st0 = now2;
+            const p2 = Math.min((now2 - st0) / 900, 1);
             const e = easeInOut(p2);
             const cx = sx + (tx - sx) * e;
             const cy = sy + (ty - sy) * e + Math.sin(p2 * Math.PI) * swingDepth;
             const cvx = cx - pos.x, cvy = cy - pos.y;
             if (Math.abs(cvx) + Math.abs(cvy) > 0.1) pos.rot = shortestRot(calcRot(cvx, cvy));
             setPos(cx, cy); updateVRot();
-            initFeet(cx, cy, pos.vRot, 1.4); // Deeper flare
-            drawLegs(cx, cy, pos.vRot, 1.2); // Intense flailing
+            initFeet(cx, cy, pos.vRot, 1.4);
+            drawLegs(cx, cy, pos.vRot, 1.2);
             showWeb(px, py, cx, cy);
             if (p2 < 1) raf = requestAnimationFrame(swing);
             else { inAction = false; hideWeb(); startIdleDraw(); timeout = setTimeout(actionCycle, 2000); }
@@ -252,24 +301,26 @@ export default function Spider() {
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < 50) { doSwing(gr, blocks); return; }
       pos.rot = shortestRot(calcRot(dx, dy));
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         cancelAnimationFrame(idleRaf); inAction = true;
         initFeet(pos.x, pos.y, pos.rot);
-        let ct0;
+        let ct0 = -1;
         const dur = Math.max(800, dist * 8);
         const startX = pos.x, startY = pos.y;
         lastPos = { x: startX, y: startY };
         let iterLastRot = pos.vRot;
-        const loop = t => {
-          if (!ct0) ct0 = t;
-          const p = Math.min((t - ct0) / dur, 1);
+        const loop = rawT => {
+          const now = updateClock(rawT);
+          if (!isVisible.current || !isTabActive.current) { raf = requestAnimationFrame(loop); return; }
+          if (ct0 < 0) ct0 = now;
+          const p = Math.min((now - ct0) / dur, 1);
           const cx = startX + dx * p, cy = startY + dy * p;
           const vx = cx - lastPos.x, vy = cy - lastPos.y;
           const dr = pos.vRot - iterLastRot;
           lastPos = { x: cx, y: cy }; iterLastRot = pos.vRot;
           if (Math.abs(vx) + Math.abs(vy) > 0.1) pos.rot = shortestRot(calcRot(vx, vy));
           setPos(cx, cy); updateVRot();
-          updateGait(t, cx, cy, pos.vRot, vx, vy, dr);
+          updateGait(now, cx, cy, pos.vRot, vx, vy, dr);
           drawLegs(cx, cy, pos.vRot, 0.2);
           if (p < 1) raf = requestAnimationFrame(loop);
           else { inAction = false; startIdleDraw(); timeout = setTimeout(actionCycle, 1000); }
@@ -279,11 +330,15 @@ export default function Spider() {
     };
 
     const actionCycle = () => {
-      const grid = document.querySelector('.hero-grid');
-      const blocks = document.querySelectorAll('.hero-main,.stat-cell');
-      if (!grid || !blocks.length) return;
-      if (curTarget.current && Math.random() > 0.45) doCrawl(grid.getBoundingClientRect(), blocks);
-      else doSwing(grid.getBoundingClientRect(), blocks);
+      if (!isTabActive.current || !isVisible.current) {
+        timeout = setTimeout(actionCycle, 1000);
+        return;
+      }
+      const currentGrid = document.querySelector('.hero-grid');
+      const currentBlocks = document.querySelectorAll('.hero-main,.stat-cell');
+      if (!currentGrid || !currentBlocks.length) return;
+      if (curTarget.current && Math.random() > 0.45) doCrawl(currentGrid.getBoundingClientRect(), currentBlocks);
+      else doSwing(currentGrid.getBoundingClientRect(), currentBlocks);
     };
 
     const onLoaded = () => { timeout = setTimeout(performDrop, 500); };
@@ -295,6 +350,8 @@ export default function Spider() {
       cancelAnimationFrame(raf);
       cancelAnimationFrame(idleRaf);
       window.removeEventListener('loaderFinished', onLoaded);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      observer.disconnect();
     };
   }, []);
 
