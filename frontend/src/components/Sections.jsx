@@ -107,7 +107,7 @@ export function WorkSection({ showHeader = true }) {
 
     return (
         <section id="work" className="work-section">
-            {showHeader ? <SectionHeader title="Work" subtitle="Work" /> : null}
+            {showHeader ? <SectionHeader title="Work" subtitle="Selected Work" /> : null}
             <div className="work-grid" ref={gridRef}>
                 {work.map((project, index) => (
                     <a

@@ -45,9 +45,17 @@ export const work = [
     {
         label: 'Design + Dev',
         labelClass: '',
+        title: 'EarthPlate',
+        subtitle: 'Culinary Sanctuary · 2025',
+        imageClass: 'wimg-a',
+        url: 'https://earthplate-v1.onrender.com/',
+    },
+    {
+        label: 'Design + Dev',
+        labelClass: '',
         title: 'Buildstack SaaS',
         subtitle: 'Landing page · 2024',
-        imageClass: 'wimg-a',
+        imageClass: 'wimg-b',
         url: 'https://buildstack.io',
     },
     {
@@ -55,17 +63,10 @@ export const work = [
         labelClass: 'dark',
         title: 'Aurum Fashion',
         subtitle: 'E-Commerce store · 2024',
-        imageClass: 'wimg-b',
+        imageClass: 'wimg-c',
         url: 'https://aurumfashion.com',
     },
-    {
-        label: 'Branding',
-        labelClass: '',
-        title: 'NovaTech Agency',
-        subtitle: 'Identity + web · 2025',
-        imageClass: 'wimg-c',
-        url: 'https://novatech-agency.com',
-    },
+
 ];
 
 export const processSteps = [
