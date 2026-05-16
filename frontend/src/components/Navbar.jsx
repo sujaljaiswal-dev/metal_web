@@ -1,4 +1,5 @@
-import { Link, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
     { href: '#services', label: 'Services' },
@@ -11,6 +12,8 @@ export default function Navbar() {
     const [open, setOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState('');
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 20);
@@ -35,24 +38,45 @@ export default function Navbar() {
         return () => observer.disconnect();
     }, []);
 
+    // Handle cross-page anchor scrolling
+    useEffect(() => {
+        if (location.pathname === '/' && location.hash) {
+            const id = location.hash.replace('#', '');
+            const target = document.getElementById(id);
+            if (target) {
+                setTimeout(() => {
+                    const navHeight = document.getElementById('navbar')?.offsetHeight || 0;
+                    const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
+                    window.scrollTo({ top, behavior: 'smooth' });
+                }, 100);
+            }
+        }
+    }, [location]);
+
     const handleAnchorClick = (e) => {
         const href = e.currentTarget.getAttribute('href');
         if (!href.startsWith('#')) return;
 
         e.preventDefault();
+        setOpen(false);
+
+        if (location.pathname !== '/') {
+            navigate('/' + href);
+            return;
+        }
+
         const target = document.querySelector(href);
         if (!target) return;
 
         const navHeight = document.getElementById('navbar')?.offsetHeight || 0;
         const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
         window.scrollTo({ top, behavior: 'smooth' });
-        setOpen(false);
     };
 
     return (
         <nav id="navbar" className={scrolled ? 'scrolled' : ''}>
             <div className="nav-inner">
-                <a href="#hero" className="logo-wrap" aria-label="Metal Web home" onClick={handleAnchorClick}>
+                <Link to="/" className="logo-wrap" aria-label="Metal Web home">
                     <div className="logo-icon">
                         <div className="li-bar">
                             <span className="dot red"></span>
@@ -62,7 +86,7 @@ export default function Navbar() {
                         <div className="li-body">MW</div>
                     </div>
                     <span className="logo-text">METAL_WEB</span>
-                </a>
+                </Link>
 
                 <div className="nav-links">
                     {navItems.map((item) => (

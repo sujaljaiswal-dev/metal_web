@@ -57,7 +57,7 @@ export default function Spider() {
   useEffect(() => {
     const spider = spiderRef.current;
     const web = webRef.current;
-    const grid = document.querySelector('.hero-grid');
+    const grid = document.querySelector('.hero-grid') || document.querySelector('.not-found-page');
 
     let raf, timeout;
     let pos = { x: -200, y: -200, rot: 90, vRot: 90 };
@@ -228,7 +228,7 @@ export default function Spider() {
 
     const performDrop = () => {
       const gridRect = grid.getBoundingClientRect();
-      const blocks = document.querySelectorAll('.hero-main,.stat-cell');
+      const blocks = document.querySelectorAll('.hero-main,.stat-cell,.nf-target');
       if (!blocks.length) return;
       const tgt = blocks[Math.floor(Math.random() * blocks.length)];
       curTarget.current = tgt;
@@ -334,8 +334,8 @@ export default function Spider() {
         timeout = setTimeout(actionCycle, 1000);
         return;
       }
-      const currentGrid = document.querySelector('.hero-grid');
-      const currentBlocks = document.querySelectorAll('.hero-main,.stat-cell');
+      const currentGrid = document.querySelector('.hero-grid') || document.querySelector('.not-found-page');
+      const currentBlocks = document.querySelectorAll('.hero-main,.stat-cell,.nf-target');
       if (!currentGrid || !currentBlocks.length) return;
       if (curTarget.current && Math.random() > 0.45) doCrawl(currentGrid.getBoundingClientRect(), currentBlocks);
       else doSwing(currentGrid.getBoundingClientRect(), currentBlocks);
