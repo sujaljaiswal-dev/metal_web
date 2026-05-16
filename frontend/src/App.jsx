@@ -25,6 +25,7 @@ function ConditionalFooter() {
 
 export default function App() {
     const [loaderFinished, setLoaderFinished] = useState(false);
+    const [mountLoader, setMountLoader] = useState(true);
 
     useEffect(() => {
         if ('scrollRestoration' in window.history) {
@@ -38,14 +39,15 @@ export default function App() {
         setTimeout(() => {
             document.body.classList.add('loader-animation-done');
             window.dispatchEvent(new Event('loaderFinished'));
-        }, 1000);
+            setMountLoader(false);
+        }, 1200); // Wait for the full slide-up animation
     };
 
     return (
         <BrowserRouter>
             <SEO />
             <ScrollToTop />
-            {!loaderFinished && <Loader onFinished={handleLoaderFinished} />}
+            {mountLoader && <Loader onFinished={handleLoaderFinished} />}
             <Navbar />
             <div className={`app-wrapper ${loaderFinished ? 'loader-exit' : ''}`}>
                 <div className="scroll-progress" aria-hidden="true"></div>
