@@ -12,7 +12,8 @@
 
 .split-layout {
   display: grid;
-  grid-template-columns: 48% 52%; /* Exact ratio from image */
+  grid-template-columns: 48% 52%;
+  /* Exact ratio from image */
   width: 100%;
 }
 
@@ -102,7 +103,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Fix: Clip inner content to rounded corners */
+  overflow: hidden;
+  /* Fix: Clip inner content to rounded corners */
 }
 
 .mockup-header {
@@ -147,6 +149,7 @@
 .m-only {
   display: none;
 }
+
 .d-only {
   display: block;
 }
@@ -200,7 +203,8 @@
   display: grid;
   grid-template-columns: 60% 40%;
   border-bottom: var(--border);
-  flex-grow: 1; /* Allows rows to stretch if there's extra space */
+  flex-grow: 1;
+  /* Allows rows to stretch if there's extra space */
 }
 
 .rp-cell {
@@ -399,7 +403,7 @@
   align-items: center;
   gap: 1rem;
   padding-left: 2vw;
-  border-left: 1px solid rgba(0,0,0,0.1);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .cp-avatar {
@@ -471,7 +475,7 @@
 
 .cta-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 4px 4px 0 rgba(255,255,255,0.2);
+  box-shadow: 4px 4px 0 rgba(255, 255, 255, 0.2);
 }
 
 /* ── MOBILE FALLBACK ── */
@@ -480,14 +484,17 @@
     height: auto;
     overflow-y: auto;
   }
+
   .split-layout {
     grid-template-columns: 1fr;
   }
+
   .left-pane {
     border-right: none;
     border-bottom: var(--border);
     height: auto;
   }
+
   .lp-visual {
     height: 620px;
     padding: 2.5rem 2rem 0;
@@ -496,6 +503,7 @@
     align-items: center;
     justify-content: center;
   }
+
   .mockup-wrapper {
     width: min(340px, 95%);
     max-width: 95%;
@@ -504,51 +512,63 @@
     border-bottom: none;
     border-radius: 40px 40px 0 0;
     margin: 0 auto;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-    overflow: hidden; /* Fix: Clip inner content on mobile too */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    /* Fix: Clip inner content on mobile too */
     display: flex;
     flex-direction: column;
   }
+
   .mockup-body {
     height: 100%;
   }
+
   .mockup-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: top;
   }
+
   .mockup-header {
     display: none;
   }
+
   .right-pane {
     display: flex;
     flex-direction: column;
   }
+
   .rp-row {
     grid-template-columns: 1fr;
   }
+
   .rp-cell {
     border-right: none;
     border-bottom: var(--border);
   }
+
   .rp-row-client {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .client-profile {
     border-left: none;
     padding-left: 0;
   }
+
   .rp-row-cta {
     flex-direction: column;
     align-items: flex-start;
     padding: 3rem 2.5vw;
     gap: 1.5rem;
   }
+
   .d-only {
     display: none;
   }
+
   .m-only {
     display: block;
   }
@@ -559,6 +579,7 @@
     height: 560px;
     padding: 1.5rem 1rem 0;
   }
+
   .mockup-wrapper {
     border-radius: 30px 30px 0 0;
   }

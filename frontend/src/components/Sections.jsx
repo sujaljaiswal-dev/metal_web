@@ -213,6 +213,7 @@ export function ServicesSection({ showHeader = true }) {
 
 export function WorkSection({ showHeader = true }) {
     const gridRef = useWorkSlide(80, 600);
+    const blockedProjectSlugs = new Set(['buildstack', 'aurum-fashion']);
 
     // Cycle through slide directions: left, up, right for 3-column grid
     const slideDirections = ['left', 'up', 'right'];
@@ -225,7 +226,7 @@ export function WorkSection({ showHeader = true }) {
                 {work.map((project, index) => (
                     <Link
                         key={project.title}
-                        to={`/project/${project.slug}`}
+                        to={blockedProjectSlugs.has(project.slug) ? '/404' : `/project/${project.slug}`}
                         className="work-card-link"
                         aria-label={`View project: ${project.title} - ${project.subtitle}`}
                     >

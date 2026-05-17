@@ -270,8 +270,8 @@
 }
 
 /* Give the hero a gentle upward reveal without sliding under the navbar */
-.app-wrapper.loader-exit .hero-grid {
-    animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) .80s both;
+.app-wrapper.loader-exit.loader-present .hero-grid {
+    animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
 }
 
 @keyframes hero-rise {

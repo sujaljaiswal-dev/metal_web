@@ -11,6 +11,12 @@ import earthMobile from '../assets/projectPic/EarthPlate_mobile.png';
 export default function ProjectDetail() {
     const { slug } = useParams();
     const projects = work;
+    const blockedProjectSlugs = new Set(['buildstack', 'aurum-fashion']);
+
+    if (blockedProjectSlugs.has(slug)) {
+        return <NotFoundPage />;
+    }
+
     const project = projects.find((p) => p.slug === slug);
 
     // Debug logging

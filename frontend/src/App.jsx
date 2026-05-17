@@ -49,7 +49,7 @@ export default function App() {
             <ScrollToTop />
             {mountLoader && <Loader onFinished={handleLoaderFinished} />}
             <Navbar />
-            <div className={`app-wrapper ${loaderFinished ? 'loader-exit' : ''}`}>
+            <div className={`app-wrapper ${loaderFinished ? 'loader-exit' : ''} ${mountLoader ? 'loader-present' : ''}`}>
                 <div className="scroll-progress" aria-hidden="true"></div>
                 <ScrollEffects />
                 <main>
