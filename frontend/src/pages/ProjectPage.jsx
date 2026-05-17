@@ -16,12 +16,7 @@ export default function ProjectPage() {
     }
 
     if (!project) {
-        return (
-            <div className="error-page" style={{ padding: '10rem 2rem', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '3rem', marginBottom: '2rem' }}>Project not found</h1>
-                <Link to="/" style={{ color: 'var(--y)', fontFamily: 'var(--font-mono)' }}>Return to Portfolio</Link>
-            </div>
-        );
+        return <Navigate to="/404" replace />;
     }
 
     const { details } = project;
