@@ -141,21 +141,25 @@ export function ServicesSection({ showHeader = true }) {
 
                             if (diff === 0) {
                                 opacity = 1;
-                                transform = 'translateX(0) scale(1) rotateY(0deg)';
+                                transform = 'translateX(0) scale(1) rotateY(0deg) translateZ(0px)';
                                 zIndex = 10;
                                 pointerEvents = 'auto';
                             } else if (diff === -1) {
                                 opacity = 0.35;
-                                transform = 'translateX(-70%) scale(0.8) rotateY(35deg)';
+                                transform = 'translateX(-70%) scale(0.8) rotateY(35deg) translateZ(-80px)';
                                 zIndex = 5;
                             } else if (diff === 1) {
                                 opacity = 0.35;
-                                transform = 'translateX(70%) scale(0.8) rotateY(-35deg)';
+                                transform = 'translateX(70%) scale(0.8) rotateY(-35deg) translateZ(-80px)';
                                 zIndex = 5;
-                            } else {
-                                // Far cards stay centered and hidden to avoid "zipping" across the screen
+                            } else if (diff < -1) {
                                 opacity = 0;
-                                transform = 'translateX(0) scale(0.6) rotateY(0deg)';
+                                transform = 'translateX(-100%) scale(0.6) rotateY(45deg) translateZ(-150px)';
+                                zIndex = 0;
+                            } else {
+                                opacity = 0;
+                                transform = 'translateX(100%) scale(0.6) rotateY(-45deg) translateZ(-150px)';
+                                zIndex = 0;
                             }
 
                             return (
@@ -303,21 +307,25 @@ export function ProcessSection({ showHeader = true, includeTestimonial = true })
                             
                             if (diff === 0) {
                                 opacity = 1;
-                                transform = 'translateX(0) scale(1) rotateY(0deg)';
+                                transform = 'translateX(0) scale(1) rotateY(0deg) translateZ(0px)';
                                 zIndex = 10;
                                 pointerEvents = 'auto';
                             } else if (diff === -1) {
                                 opacity = 0.35;
-                                transform = 'translateX(-70%) scale(0.8) rotateY(35deg)';
+                                transform = 'translateX(-70%) scale(0.8) rotateY(35deg) translateZ(-80px)';
                                 zIndex = 5;
                             } else if (diff === 1) {
                                 opacity = 0.35;
-                                transform = 'translateX(70%) scale(0.8) rotateY(-35deg)';
+                                transform = 'translateX(70%) scale(0.8) rotateY(-35deg) translateZ(-80px)';
                                 zIndex = 5;
-                            } else {
-                                // Far cards stay centered and hidden to avoid "zipping" across the screen
+                            } else if (diff < -1) {
                                 opacity = 0;
-                                transform = 'translateX(0) scale(0.6) rotateY(0deg)';
+                                transform = 'translateX(-100%) scale(0.6) rotateY(45deg) translateZ(-150px)';
+                                zIndex = 0;
+                            } else {
+                                opacity = 0;
+                                transform = 'translateX(100%) scale(0.6) rotateY(-45deg) translateZ(-150px)';
+                                zIndex = 0;
                             }
 
                             return (
