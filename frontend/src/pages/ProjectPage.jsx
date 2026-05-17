@@ -1,6 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { work } from '../data/siteData';
 import '../styles/project-detail.css';
+import SEO from '../components/SEO';
 
 // Project Mockups
 import earthDesktop from '../assets/projectPic/EarthPLate_desktop.png';
@@ -22,6 +23,12 @@ export default function ProjectPage() {
     const { details } = project;
 
     return (
+        <>
+            <SEO
+                title={`${project.title} — Metal Web Case Study`}
+                description={project.details?.description || project.subtitle}
+                url={`https://www.metalweb.site/project/${project.slug}`}
+            />
         <div className="project-detail-page">
             <div className="split-layout">
                 {/* ── LEFT PANE ── */}
@@ -178,5 +185,6 @@ export default function ProjectPage() {
                 </div>
             </div>
         </div>
+    </>
     );
 }
