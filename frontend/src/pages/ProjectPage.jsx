@@ -13,11 +13,18 @@ export default function ProjectDetail() {
     const projects = work;
     const project = projects.find((p) => p.slug === slug);
 
+    // Debug logging
+    console.log('[ProjectDetail] slug:', slug);
+    console.log('[ProjectDetail] project:', project);
+    console.log('[ProjectDetail] projects available:', projects.map(p => p.slug));
+
     if (!project) {
+        console.warn('[ProjectDetail] Project not found for slug:', slug);
         return <NotFoundPage />;
     }
 
     const { details } = project;
+    console.log('[ProjectDetail] details:', details);
 
     return (
         <>
@@ -76,7 +83,7 @@ export default function ProjectDetail() {
                         <div className="meta-bar">
                             <div className="meta-col">
                                 <span className="mc-label"><span role="img" aria-label="calendar">📅</span> Year</span>
-                                <span className="mc-value">{project.subtitle.split('·')[1]?.trim() || '2024'}</span>
+                                <span className="mc-value">{project?.subtitle ? project.subtitle.split('·')[1]?.trim() || '2024' : '2024'}</span>
                             </div>
                             <div className="meta-col">
                                 <span className="mc-label"><span role="img" aria-label="user">👤</span> Role</span>
