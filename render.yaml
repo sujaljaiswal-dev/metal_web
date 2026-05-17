@@ -2,8 +2,9 @@ services:
   - type: web
     name: metal-web
     env: static
+    rootDir: frontend
     buildCommand: npm run build
-    staticPublishPath: ./dist
+    staticPublishPath: dist
     routes:
       - type: rewrite
         source: /*
