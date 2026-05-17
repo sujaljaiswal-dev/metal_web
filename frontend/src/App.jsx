@@ -36,11 +36,11 @@ export default function App() {
 
     const handleLoaderFinished = () => {
         setLoaderFinished(true);
+        document.body.classList.add('loader-animation-done');
+        window.dispatchEvent(new Event('loaderFinished'));
         setTimeout(() => {
-            document.body.classList.add('loader-animation-done');
-            window.dispatchEvent(new Event('loaderFinished'));
             setMountLoader(false);
-        }, 1200); // Wait for the full slide-up animation
+        }, 1200); // keep loader mounted while the exit animation completes
     };
 
     return (

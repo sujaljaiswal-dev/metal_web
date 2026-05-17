@@ -260,19 +260,18 @@
     max-width: 100%;
     min-height: 100vh;
     opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform;
+    transform: none;
+    transition: opacity 0.55s ease;
+    will-change: opacity;
 }
 
 .app-wrapper.loader-exit {
     opacity: 1;
-    transform: translateY(0);
 }
 
 /* Give the hero a gentle upward reveal without sliding under the navbar */
 .app-wrapper.loader-exit .hero-grid {
-    animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+    animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) .80s both;
 }
 
 @keyframes hero-rise {
