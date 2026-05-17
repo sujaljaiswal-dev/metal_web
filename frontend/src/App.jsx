@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
-import ProjectPage from './pages/ProjectPage';
+import ProjectDetail from './pages/ProjectPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ScrollEffects from './components/ScrollEffects';
 import Loader from './components/Loader';
@@ -55,7 +55,7 @@ export default function App() {
                 <main>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
-                        <Route path="/project/:slug" element={<ProjectPage />} />
+                        <Route path="/project/:slug" element={<ProjectDetail />} />
                         <Route path="/404" element={<NotFoundPage />} />
                         <Route path="*" element={<NotFoundPage />} />
                     </Routes>

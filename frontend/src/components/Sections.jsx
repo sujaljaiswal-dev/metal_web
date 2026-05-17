@@ -106,106 +106,106 @@ export function ServicesSection({ showHeader = true }) {
                     <SectionHeader title="What We Do" subtitle="Services" />
                 ) : null}
 
-            {/* Desktop Grid (Hidden on mobile) */}
-            <div className="services-grid desktop-only" ref={gridRef}>
-                {services.map((service) => (
-                    <div key={service.title} className="svc">
-                        <div className="svc-n parallax-soft">{service.number}</div>
-                        <h3 className="svc-title">{service.title}</h3>
-                        <p className="svc-desc">{service.description}</p>
-                        <span className="svc-arrow">→</span>
-                    </div>
-                ))}
-            </div>
-
-            {/* Mobile Slider (Hidden on desktop) */}
-            <div className="services-mobile-slider mobile-only">
-                <div
-                    className="slider-viewport"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                >
-                    <div className="slider-track">
-                        {services.map((service, idx) => {
-                            const total = services.length;
-                            let diff = idx - activeIndex;
-
-                            // Circular diff for wrap-around logic
-                            if (diff > total / 2) diff -= total;
-                            if (diff < -total / 2) diff += total;
-
-                            let opacity = 0;
-                            let transform = 'translateX(0) scale(0.5) rotateY(0deg)';
-                            let zIndex = 1;
-                            let pointerEvents = 'none';
-
-                            if (diff === 0) {
-                                opacity = 1;
-                                transform = 'translateX(0) scale(1) rotateY(0deg) translateZ(0px)';
-                                zIndex = 10;
-                                pointerEvents = 'auto';
-                            } else if (diff === -1) {
-                                opacity = 0.35;
-                                transform = 'translateX(-70%) scale(0.8) rotateY(35deg) translateZ(-80px)';
-                                zIndex = 5;
-                            } else if (diff === 1) {
-                                opacity = 0.35;
-                                transform = 'translateX(70%) scale(0.8) rotateY(-35deg) translateZ(-80px)';
-                                zIndex = 5;
-                            } else if (diff < -1) {
-                                opacity = 0;
-                                transform = 'translateX(-100%) scale(0.6) rotateY(45deg) translateZ(-150px)';
-                                zIndex = 0;
-                            } else {
-                                opacity = 0;
-                                transform = 'translateX(100%) scale(0.6) rotateY(-45deg) translateZ(-150px)';
-                                zIndex = 0;
-                            }
-
-                            return (
-                                <div
-                                    key={service.title}
-                                    className={`svc-slide-card ${idx === activeIndex ? 'active' : ''}`}
-                                    style={{
-                                        opacity,
-                                        transform,
-                                        zIndex,
-                                        pointerEvents
-                                    }}
-                                >
-                                    <div className="card-inner">
-                                        <div className="card-top">
-                                            <span className="card-num">{service.number}</span>
-                                            <div className="card-icon" dangerouslySetInnerHTML={{ __html: service.icon }} />
-                                        </div>
-                                        <h3 className="card-title">{service.title}</h3>
-                                        <p className="card-desc">{service.description}</p>
-                                        <div className="card-footer">
-                                            <span className="card-arrow">→</span>
-                                        </div>
-                                    </div>
-                                    <div className="card-page-count">
-                                        {String(idx + 1).padStart(2, '0')} / {String(services.length).padStart(2, '0')}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                {/* Desktop Grid (Hidden on mobile) */}
+                <div className="services-grid desktop-only" ref={gridRef}>
+                    {services.map((service) => (
+                        <div key={service.title} className="svc">
+                            <div className="svc-n parallax-soft">{service.number}</div>
+                            <h3 className="svc-title">{service.title}</h3>
+                            <p className="svc-desc">{service.description}</p>
+                            <span className="svc-arrow">→</span>
+                        </div>
+                    ))}
                 </div>
 
-                <div className="slider-dots-container">
-                    <div className="slider-dots">
-                        {services.map((_, idx) => (
-                            <button
-                                key={idx}
-                                className={`slider-dot ${idx === activeIndex ? 'active' : ''}`}
-                                onClick={() => setActiveIndex(idx)}
-                                aria-label={`Go to slide ${idx + 1}`}
-                            />
-                        ))}
+                {/* Mobile Slider (Hidden on desktop) */}
+                <div className="services-mobile-slider mobile-only">
+                    <div
+                        className="slider-viewport"
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                    >
+                        <div className="slider-track">
+                            {services.map((service, idx) => {
+                                const total = services.length;
+                                let diff = idx - activeIndex;
+
+                                // Circular diff for wrap-around logic
+                                if (diff > total / 2) diff -= total;
+                                if (diff < -total / 2) diff += total;
+
+                                let opacity = 0;
+                                let transform = 'translateX(0) scale(0.5) rotateY(0deg)';
+                                let zIndex = 1;
+                                let pointerEvents = 'none';
+
+                                if (diff === 0) {
+                                    opacity = 1;
+                                    transform = 'translateX(0) scale(1) rotateY(0deg) translateZ(0px)';
+                                    zIndex = 10;
+                                    pointerEvents = 'auto';
+                                } else if (diff === -1) {
+                                    opacity = 0.35;
+                                    transform = 'translateX(-70%) scale(0.8) rotateY(35deg) translateZ(-80px)';
+                                    zIndex = 5;
+                                } else if (diff === 1) {
+                                    opacity = 0.35;
+                                    transform = 'translateX(70%) scale(0.8) rotateY(-35deg) translateZ(-80px)';
+                                    zIndex = 5;
+                                } else if (diff < -1) {
+                                    opacity = 0;
+                                    transform = 'translateX(-100%) scale(0.6) rotateY(45deg) translateZ(-150px)';
+                                    zIndex = 0;
+                                } else {
+                                    opacity = 0;
+                                    transform = 'translateX(100%) scale(0.6) rotateY(-45deg) translateZ(-150px)';
+                                    zIndex = 0;
+                                }
+
+                                return (
+                                    <div
+                                        key={service.title}
+                                        className={`svc-slide-card ${idx === activeIndex ? 'active' : ''}`}
+                                        style={{
+                                            opacity,
+                                            transform,
+                                            zIndex,
+                                            pointerEvents
+                                        }}
+                                    >
+                                        <div className="card-inner">
+                                            <div className="card-top">
+                                                <span className="card-num">{service.number}</span>
+                                                <div className="card-icon" dangerouslySetInnerHTML={{ __html: service.icon }} />
+                                            </div>
+                                            <h3 className="card-title">{service.title}</h3>
+                                            <p className="card-desc">{service.description}</p>
+                                            <div className="card-footer">
+                                                <span className="card-arrow">→</span>
+                                            </div>
+                                        </div>
+                                        <div className="card-page-count">
+                                            {String(idx + 1).padStart(2, '0')} / {String(services.length).padStart(2, '0')}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="slider-dots-container">
+                        <div className="slider-dots">
+                            {services.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    className={`slider-dot ${idx === activeIndex ? 'active' : ''}`}
+                                    onClick={() => setActiveIndex(idx)}
+                                    aria-label={`Go to slide ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
             </Reveal>
         </section>
     );
@@ -225,7 +225,7 @@ export function WorkSection({ showHeader = true }) {
                 {work.map((project, index) => (
                     <Link
                         key={project.title}
-                        to={project.url}
+                        to={`/project/${project.slug}`}
                         className="work-card-link"
                         aria-label={`View project: ${project.title} - ${project.subtitle}`}
                     >
@@ -274,123 +274,123 @@ export function ProcessSection({ showHeader = true, includeTestimonial = true })
         <section id="agency" className="process-section">
             <Reveal className="mobile-section-reveal">
                 {showHeader ? <SectionHeader title="How We Work" subtitle="Our process" /> : null}
-            
-            {/* Desktop Grid */}
-            <div className="process-grid desktop-only">
-                {processSteps.map((step, index) => (
-                    <Reveal key={step.title} className="process-step" delay={index * 0.1}>
-                        <div className="ps-n">{step.number}</div>
-                        <h3 className="ps-title">{step.title}</h3>
-                        <p className="ps-desc">{step.description}</p>
-                    </Reveal>
-                ))}
-            </div>
 
-            {/* Mobile Slider (Reusing the services slider styles for exact matching) */}
-            <div className="services-mobile-slider mobile-only process-slider-container">
-                <div 
-                    className="slider-viewport"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                >
-                    <div className="slider-track">
-                        {processSteps.map((step, idx) => {
-                            const total = processSteps.length;
-                            let diff = idx - activeIndex;
-                            if (diff > total / 2) diff -= total;
-                            if (diff < -total / 2) diff += total;
+                {/* Desktop Grid */}
+                <div className="process-grid desktop-only">
+                    {processSteps.map((step, index) => (
+                        <Reveal key={step.title} className="process-step" delay={index * 0.1}>
+                            <div className="ps-n">{step.number}</div>
+                            <h3 className="ps-title">{step.title}</h3>
+                            <p className="ps-desc">{step.description}</p>
+                        </Reveal>
+                    ))}
+                </div>
 
-                            let opacity = 0;
-                            let transform = 'translateX(0) scale(0.5) rotateY(0deg)';
-                            let zIndex = 1;
-                            let pointerEvents = 'none';
-                            
-                            if (diff === 0) {
-                                opacity = 1;
-                                transform = 'translateX(0) scale(1) rotateY(0deg) translateZ(0px)';
-                                zIndex = 10;
-                                pointerEvents = 'auto';
-                            } else if (diff === -1) {
-                                opacity = 0.35;
-                                transform = 'translateX(-70%) scale(0.8) rotateY(35deg) translateZ(-80px)';
-                                zIndex = 5;
-                            } else if (diff === 1) {
-                                opacity = 0.35;
-                                transform = 'translateX(70%) scale(0.8) rotateY(-35deg) translateZ(-80px)';
-                                zIndex = 5;
-                            } else if (diff < -1) {
-                                opacity = 0;
-                                transform = 'translateX(-100%) scale(0.6) rotateY(45deg) translateZ(-150px)';
-                                zIndex = 0;
-                            } else {
-                                opacity = 0;
-                                transform = 'translateX(100%) scale(0.6) rotateY(-45deg) translateZ(-150px)';
-                                zIndex = 0;
-                            }
+                {/* Mobile Slider (Reusing the services slider styles for exact matching) */}
+                <div className="services-mobile-slider mobile-only process-slider-container">
+                    <div
+                        className="slider-viewport"
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                    >
+                        <div className="slider-track">
+                            {processSteps.map((step, idx) => {
+                                const total = processSteps.length;
+                                let diff = idx - activeIndex;
+                                if (diff > total / 2) diff -= total;
+                                if (diff < -total / 2) diff += total;
 
-                            return (
-                                <div 
-                                    key={step.title} 
-                                    className={`svc-slide-card ${idx === activeIndex ? 'active' : ''}`}
-                                    style={{ 
-                                        opacity,
-                                        transform,
-                                        zIndex,
-                                        pointerEvents
-                                    }}
-                                >
-                                    <div className="card-inner">
-                                        <div className="card-top">
-                                            <span className="card-num">{step.number}</span>
-                                            <div className="card-icon" dangerouslySetInnerHTML={{ __html: step.icon }} />
+                                let opacity = 0;
+                                let transform = 'translateX(0) scale(0.5) rotateY(0deg)';
+                                let zIndex = 1;
+                                let pointerEvents = 'none';
+
+                                if (diff === 0) {
+                                    opacity = 1;
+                                    transform = 'translateX(0) scale(1) rotateY(0deg) translateZ(0px)';
+                                    zIndex = 10;
+                                    pointerEvents = 'auto';
+                                } else if (diff === -1) {
+                                    opacity = 0.35;
+                                    transform = 'translateX(-70%) scale(0.8) rotateY(35deg) translateZ(-80px)';
+                                    zIndex = 5;
+                                } else if (diff === 1) {
+                                    opacity = 0.35;
+                                    transform = 'translateX(70%) scale(0.8) rotateY(-35deg) translateZ(-80px)';
+                                    zIndex = 5;
+                                } else if (diff < -1) {
+                                    opacity = 0;
+                                    transform = 'translateX(-100%) scale(0.6) rotateY(45deg) translateZ(-150px)';
+                                    zIndex = 0;
+                                } else {
+                                    opacity = 0;
+                                    transform = 'translateX(100%) scale(0.6) rotateY(-45deg) translateZ(-150px)';
+                                    zIndex = 0;
+                                }
+
+                                return (
+                                    <div
+                                        key={step.title}
+                                        className={`svc-slide-card ${idx === activeIndex ? 'active' : ''}`}
+                                        style={{
+                                            opacity,
+                                            transform,
+                                            zIndex,
+                                            pointerEvents
+                                        }}
+                                    >
+                                        <div className="card-inner">
+                                            <div className="card-top">
+                                                <span className="card-num">{step.number}</span>
+                                                <div className="card-icon" dangerouslySetInnerHTML={{ __html: step.icon }} />
+                                            </div>
+                                            <h3 className="card-title">{step.title}</h3>
+                                            <p className="card-desc">{step.description}</p>
+                                            <div className="card-footer">
+                                                <span className="card-arrow">→</span>
+                                            </div>
                                         </div>
-                                        <h3 className="card-title">{step.title}</h3>
-                                        <p className="card-desc">{step.description}</p>
-                                        <div className="card-footer">
-                                            <span className="card-arrow">→</span>
+                                        <div className="card-page-count">
+                                            {String(idx + 1).padStart(2, '0')} / {String(processSteps.length).padStart(2, '0')}
                                         </div>
                                     </div>
-                                    <div className="card-page-count">
-                                        {String(idx + 1).padStart(2, '0')} / {String(processSteps.length).padStart(2, '0')}
-                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="slider-dots-container">
+                        <div className="slider-dots">
+                            {processSteps.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    className={`slider-dot ${idx === activeIndex ? 'active' : ''}`}
+                                    onClick={() => setActiveIndex(idx)}
+                                    aria-label={`Go to slide ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {includeTestimonial ? (
+                    <div className="testimonial desktop-only">
+                        <Reveal className="t-left">
+                            <p className="t-quote">
+                                "They didn't just build what we asked for—they built what we actually needed to grow. A truly strategic partner in every sense."
+                            </p>
+                            <span className="t-author">— Kavita, Founder · Earthplate</span>
+                        </Reveal>
+                        <Reveal className="t-right" delay={0.15}>
+                            {testimonialStats.map((stat) => (
+                                <div key={stat.label} className="ts-item">
+                                    <div className="ts-n">{stat.value}</div>
+                                    <div className="ts-l">{stat.label}</div>
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </Reveal>
                     </div>
-                </div>
-
-                <div className="slider-dots-container">
-                    <div className="slider-dots">
-                        {processSteps.map((_, idx) => (
-                            <button 
-                                key={idx} 
-                                className={`slider-dot ${idx === activeIndex ? 'active' : ''}`}
-                                onClick={() => setActiveIndex(idx)}
-                                aria-label={`Go to slide ${idx + 1}`}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {includeTestimonial ? (
-                <div className="testimonial desktop-only">
-                    <Reveal className="t-left">
-                        <p className="t-quote">
-                            "They didn't just build what we asked for—they built what we actually needed to grow. A truly strategic partner in every sense."
-                        </p>
-                        <span className="t-author">— Kavita, Founder · EarthPlate</span>
-                    </Reveal>
-                    <Reveal className="t-right" delay={0.15}>
-                        {testimonialStats.map((stat) => (
-                            <div key={stat.label} className="ts-item">
-                                <div className="ts-n">{stat.value}</div>
-                                <div className="ts-l">{stat.label}</div>
-                            </div>
-                        ))}
-                    </Reveal>
-                </div>
-            ) : null}
+                ) : null}
             </Reveal>
         </section>
     );
